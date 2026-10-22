@@ -1,24 +1,28 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
-import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/js/app.jsx', 'resources/css/site.css'],
             refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-            ],
         }),
-        tailwindcss(),
+        react(),
     ],
-    server: {
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
+            // The same engine the storefront runs, for the builder's live preview and price tests.
+            '@engine': fileURLToPath(new URL('./engine/js/src/index.js', import.meta.url)),
         },
+    },
+    build: {
+        // The entry carries React, Inertia and Polaris (~140 kB gzipped); pages load on demand.
+        chunkSizeWarningLimit: 600,
+    },
+    server: {
+        watch: { ignored: ['**/storage/framework/views/**'] },
     },
 });
