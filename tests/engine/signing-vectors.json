@@ -1,0 +1,22 @@
+[
+  {
+    "secret": "test-secret-0123456789",
+    "shop": "maison-oro.myshopify.com",
+    "config_id": "cfg_8f2a91c4d5e6",
+    "price_cents": 210050,
+    "base_cents": 95000,
+    "currency": "usd",
+    "components": [],
+    "message": "v1|maison-oro.myshopify.com|cfg_8f2a91c4d5e6|210050|95000|USD|"
+  },
+  {
+    "secret": "another-secret",
+    "shop": "woodcraft-co.myshopify.com",
+    "config_id": "cfg_b2c3",
+    "price_cents": 42099,
+    "base_cents": 15000,
+    "currency": "EUR",
+    "components": [ { "variant_id": "gid://shopify/ProductVariant/4711", "cents": 78000 }, { "variant_id": "99", "cents": 1250 } ],
+    "message": "v1|woodcraft-co.myshopify.com|cfg_b2c3|42099|15000|EUR|4711:78000,99:1250"
+  }
+]

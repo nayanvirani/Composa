@@ -1,0 +1,145 @@
+[
+  {
+    "id": "ring",
+    "name": "ring: fixed options, carat x clarity table, per-character engraving",
+    "definition": {
+      "settings": {},
+      "tables": {
+        "diamond": {
+          "row_field": "carat",
+          "col_field": "clarity",
+          "values": {
+            "0.5": { "VS1": 0, "VVS1": 320 },
+            "1.0": { "VS1": 780, "VVS1": 1290 },
+            "1.5": { "VS1": 1620, "VVS1": 2480 },
+            "2.0": { "VS1": 2940, "VVS1": 4150 }
+          }
+        }
+      },
+      "steps": [
+        { "key": "s_shape", "title": "Shape", "fields": [
+          { "key": "shape", "type": "image_tiles", "label": "Shape", "required": true, "options": [
+            { "value": "round", "label": "Round", "default": true },
+            { "value": "oval", "label": "Oval", "price_rule": { "type": "fixed", "amount": 40 } },
+            { "value": "princess", "label": "Princess", "price_rule": { "type": "fixed", "amount": 60 } }
+          ] } ] },
+        { "key": "s_metal", "title": "Metal", "fields": [
+          { "key": "metal", "type": "swatch", "label": "Metal", "required": true, "options": [
+            { "value": "yellow14", "label": "14K Yellow Gold", "default": true },
+            { "value": "rose18", "label": "18K Rose Gold", "price_rule": { "type": "fixed", "amount": 320 } },
+            { "value": "plat", "label": "Platinum", "price_rule": { "type": "fixed", "amount": 610 } }
+          ] } ] },
+        { "key": "s_stone", "title": "Stone", "fields": [
+          { "key": "carat", "type": "buttons", "label": "Carat", "required": true, "price_rule": { "type": "table", "table": "diamond" }, "options": [
+            { "value": "0.5", "label": "0.5 ct", "default": true },
+            { "value": "1.0", "label": "1.0 ct" },
+            { "value": "1.5", "label": "1.5 ct" },
+            { "value": "2.0", "label": "2.0 ct" }
+          ] },
+          { "key": "clarity", "type": "dropdown", "label": "Clarity", "default": "VS1", "options": [
+            { "value": "VS1", "label": "VS1" },
+            { "value": "VVS1", "label": "VVS1" }
+          ] } ] },
+        { "key": "s_engrave", "title": "Engraving", "fields": [
+          { "key": "engraving", "type": "text", "label": "Engraving", "validation": { "max_length": 12 }, "price_rule": { "type": "per_char", "amount": 1.5 } }
+        ] }
+      ],
+      "rules": [
+        { "id": "r1", "conditions": { "all": [ { "field": "shape", "op": "eq", "value": "princess" } ] }, "actions": [ { "type": "hide_option", "field": "carat", "option": "2.0" } ] }
+      ]
+    },
+    "answers": { "shape": "oval", "metal": "rose18", "carat": "1.0", "engraving": "Forever" },
+    "context": { "base_price_cents": 95000, "quantity": 1 },
+    "expect": { "valid": true, "unit_cents": 210050, "total_cents": 210050, "options_cents": 115050, "answers": { "clarity": "VS1" } }
+  },
+  {
+    "name": "ring: rule hides 2.0 ct for princess, answer falls back to default",
+    "definition": "@ring",
+    "answers": { "shape": "princess", "carat": "2.0" },
+    "context": { "base_price_cents": 95000, "quantity": 2 },
+    "expect": { "valid": true, "unit_cents": 101000, "total_cents": 202000, "answers": { "carat": "0.5", "metal": "yellow14" }, "hidden_options": { "carat": ["2.0"] } }
+  },
+  {
+    "name": "ring: engraving longer than 12 characters is invalid but still priced",
+    "definition": "@ring",
+    "answers": { "engraving": "Forever and always" },
+    "context": { "base_price_cents": 95000 },
+    "expect": { "valid": false, "errors": ["max_length"], "unit_cents": 97400 }
+  },
+  {
+    "name": "pendant: formula weight x option metal_rate + making charge",
+    "definition": {
+      "settings": { "variables": { "making": 35 }, "formula": "weight_g * metal_rate + making", "formula_label": "Metal and making" },
+      "steps": [
+        { "key": "s1", "title": "Metal", "fields": [
+          { "key": "metal", "type": "swatch", "required": true, "options": [
+            { "value": "gold18", "label": "18K Gold", "default": true, "vars": { "metal_rate": 62.5 } },
+            { "value": "silver", "label": "Silver", "vars": { "metal_rate": 1.1 } }
+          ] },
+          { "key": "weight_g", "type": "number", "required": true, "validation": { "min": 1, "max": 50 } }
+        ] }
+      ]
+    },
+    "answers": { "metal": "gold18", "weight_g": "4.2" },
+    "context": { "base_price_cents": 2000 },
+    "expect": { "valid": true, "formula_cents": 29750, "unit_cents": 31750 }
+  },
+  {
+    "name": "pendant: unknown formula variable is reported and contributes nothing",
+    "definition": {
+      "settings": { "formula": "weight * 2" },
+      "steps": [ { "key": "s1", "title": "Weight", "fields": [ { "key": "weight_g", "type": "number" } ] } ]
+    },
+    "answers": { "weight_g": 3 },
+    "context": { "base_price_cents": 2000 },
+    "expect": { "valid": false, "errors": ["formula_error"], "unit_cents": 2000 }
+  },
+  {
+    "id": "show-step",
+    "name": "ring: show_step reveals a hidden engraving step only when asked for",
+    "definition": {
+      "steps": [
+        { "key": "s1", "title": "Extras", "fields": [
+          { "key": "extras", "type": "checkbox", "options": [ { "value": "engrave", "label": "Add engraving" }, { "value": "box", "label": "Gift box", "price_rule": { "type": "fixed", "amount": 12 } } ] }
+        ] },
+        { "key": "s_engrave", "title": "Engraving", "hidden_by_default": true, "fields": [
+          { "key": "engraving", "type": "text", "required": true, "price_rule": { "type": "per_char", "amount": 2 } }
+        ] }
+      ],
+      "rules": [
+        { "id": "show", "conditions": { "field": "extras", "op": "contains", "value": "engrave" }, "actions": [ { "type": "show_step", "step": "s_engrave" } ] }
+      ]
+    },
+    "answers": { "extras": ["engrave", "box"], "engraving": "A B" },
+    "context": { "base_price_cents": 10000 },
+    "expect": { "valid": true, "visible_steps": ["s1", "s_engrave"], "unit_cents": 11600 }
+  },
+  {
+    "name": "ring: hidden step drops its answer and its required check",
+    "definition": "@show-step",
+    "answers": { "extras": ["box"], "engraving": "IGNORED" },
+    "context": { "base_price_cents": 10000 },
+    "expect": { "valid": true, "visible_steps": ["s1"], "unit_cents": 11200, "absent_answers": ["engraving"] }
+  },
+  {
+    "name": "layers: images follow answers, text layer shows engraving, set_layer overrides",
+    "definition": {
+      "steps": [
+        { "key": "s1", "title": "Metal", "fields": [
+          { "key": "metal", "type": "swatch", "options": [ { "value": "rose", "default": true }, { "value": "plat" } ] },
+          { "key": "engraving", "type": "text" }
+        ] }
+      ],
+      "layers": [
+        { "id": "band", "z": 1, "field": "metal", "images": { "rose": "band-rose.png", "plat": "band-plat.png" } },
+        { "id": "text", "z": 3, "type": "text", "field": "engraving" },
+        { "id": "bg", "z": 0, "image": "bg.png" },
+        { "id": "halo", "z": 2, "image": "halo.png", "when": { "field": "metal", "op": "eq", "value": "nope" } }
+      ],
+      "rules": [ { "id": "r", "conditions": { "field": "metal", "op": "eq", "value": "plat" }, "actions": [ { "type": "set_layer", "layer": "band", "image": "band-plat-hi.png" } ] } ]
+    },
+    "answers": { "metal": "plat", "engraving": "Forever" },
+    "context": { "base_price_cents": 0 },
+    "expect": { "layers": ["bg", "band", "text"], "layer_images": { "band": "band-plat-hi.png" } }
+  }
+]

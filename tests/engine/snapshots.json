@@ -1,0 +1,1282 @@
+{
+  "commerce.json :: variants: Shopify Color and Size resolve to one variant; embroidery adds on top": {
+    "answers": {
+      "color": "Navy",
+      "size": "M",
+      "embroidery": "NORTH"
+    },
+    "visible_steps": [
+      "s_color",
+      "s_size",
+      "s_emb"
+    ],
+    "fields": {
+      "color": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "Black": {
+            "visible": true,
+            "disabled": false
+          },
+          "Navy": {
+            "visible": true,
+            "disabled": false
+          },
+          "Forest": {
+            "visible": true,
+            "disabled": true
+          }
+        }
+      },
+      "size": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "S": {
+            "visible": true,
+            "disabled": false
+          },
+          "M": {
+            "visible": true,
+            "disabled": false
+          },
+          "L": {
+            "visible": true,
+            "disabled": true
+          }
+        }
+      },
+      "embroidery": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      },
+      "audience": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "kids": {
+            "visible": true,
+            "disabled": false
+          },
+          "adult": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": "gid://shopify/ProductVariant/5",
+    "price": {
+      "base_cents": 4900,
+      "options_cents": 800,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 5700,
+      "total_cents": 5700,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 4900
+        },
+        {
+          "label": "embroidery",
+          "cents": 800
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: variants: a sold-out pick is cleared and the required size is reported": {
+    "answers": {
+      "color": "Navy"
+    },
+    "visible_steps": [
+      "s_color",
+      "s_size",
+      "s_emb"
+    ],
+    "fields": {
+      "color": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "Black": {
+            "visible": true,
+            "disabled": false
+          },
+          "Navy": {
+            "visible": true,
+            "disabled": false
+          },
+          "Forest": {
+            "visible": true,
+            "disabled": true
+          }
+        }
+      },
+      "size": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "S": {
+            "visible": true,
+            "disabled": false
+          },
+          "M": {
+            "visible": true,
+            "disabled": false
+          },
+          "L": {
+            "visible": true,
+            "disabled": true
+          }
+        }
+      },
+      "embroidery": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      },
+      "audience": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "kids": {
+            "visible": true,
+            "disabled": false
+          },
+          "adult": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [
+      {
+        "field": "size",
+        "code": "required"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 1,
+      "total_cents": 1,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: variants: a custom answer sets the Shopify Size option": {
+    "answers": {
+      "color": "Black",
+      "size": "S",
+      "audience": "kids"
+    },
+    "visible_steps": [
+      "s_color",
+      "s_size",
+      "s_emb"
+    ],
+    "fields": {
+      "color": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "Black": {
+            "visible": true,
+            "disabled": false
+          },
+          "Navy": {
+            "visible": true,
+            "disabled": false
+          },
+          "Forest": {
+            "visible": true,
+            "disabled": true
+          }
+        }
+      },
+      "size": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "S": {
+            "visible": true,
+            "disabled": false
+          },
+          "M": {
+            "visible": true,
+            "disabled": false
+          },
+          "L": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "embroidery": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      },
+      "audience": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "kids": {
+            "visible": true,
+            "disabled": false
+          },
+          "adult": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": "gid://shopify/ProductVariant/1",
+    "price": {
+      "base_cents": 4900,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 4900,
+      "total_cents": 4900,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 4900
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: percent rush and quantity tiers apply to the unit price": {
+    "answers": {
+      "finish": "polished",
+      "rush": [
+        "rush"
+      ]
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "finish": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "matte": {
+            "visible": true,
+            "disabled": false
+          },
+          "polished": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "rush": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "rush": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 2000,
+      "options_cents": 100,
+      "markup_percent": 15,
+      "formula_cents": 0,
+      "unit_cents": 2415,
+      "total_cents": 24150,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 2000
+        },
+        {
+          "label": "finish · polished",
+          "cents": 500
+        },
+        {
+          "label": "rush · Rush making",
+          "percent": 15
+        },
+        {
+          "label": "Volume price",
+          "cents": -400
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: furniture: W x H priced per square foot, rounded to end in .99": {
+    "answers": {
+      "size": {
+        "w": 60,
+        "h": 24
+      },
+      "wood": "walnut"
+    },
+    "visible_steps": [
+      "s1",
+      "s2"
+    ],
+    "fields": {
+      "size": {
+        "visible": true,
+        "required": true,
+        "options": {}
+      },
+      "wood": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "oak": {
+            "visible": true,
+            "disabled": false
+          },
+          "walnut": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 15000,
+      "options_cents": 27000,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 42099,
+      "total_cents": 42099,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 15000
+        },
+        {
+          "label": "size",
+          "cents": 12000
+        },
+        {
+          "label": "wood · walnut",
+          "cents": 15000
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: furniture: width below the minimum is invalid": {
+    "answers": {
+      "size": {
+        "w": 10,
+        "h": 24
+      },
+      "wood": "oak"
+    },
+    "visible_steps": [
+      "s1",
+      "s2"
+    ],
+    "fields": {
+      "size": {
+        "visible": true,
+        "required": true,
+        "options": {}
+      },
+      "wood": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "oak": {
+            "visible": true,
+            "disabled": false
+          },
+          "walnut": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [
+      {
+        "field": "size",
+        "code": "min_w"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 15000,
+      "options_cents": 2000,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 17099,
+      "total_cents": 17099,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 15000
+        },
+        {
+          "label": "size",
+          "cents": 2000
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: gift box: repeatable step prices every item (beyond max_repeats is ignored)": {
+    "answers": {
+      "items": [
+        {
+          "product": "candle"
+        },
+        {
+          "product": "soap"
+        },
+        {
+          "product": "candle"
+        }
+      ],
+      "message": "Happy birthday"
+    },
+    "visible_steps": [
+      "items",
+      "card"
+    ],
+    "fields": {
+      "product": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "candle": {
+            "visible": true,
+            "disabled": false
+          },
+          "soap": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "message": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1500,
+      "options_cents": 4500,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 6000,
+      "total_cents": 6000,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1500
+        },
+        {
+          "label": "product #1 · candle",
+          "cents": 1800
+        },
+        {
+          "label": "product #2 · soap",
+          "cents": 900
+        },
+        {
+          "label": "product #3 · candle",
+          "cents": 1800
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: gift box: an empty required repeatable step is reported": {
+    "answers": {},
+    "visible_steps": [
+      "items",
+      "card"
+    ],
+    "fields": {
+      "product": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "candle": {
+            "visible": true,
+            "disabled": false
+          },
+          "soap": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "message": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [
+      {
+        "field": "items",
+        "code": "required"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1500,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 1500,
+      "total_cents": 1500,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1500
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "commerce.json :: price rule only when quantity reaches 5; nearest rounding to 5.00": {
+    "answers": {
+      "size": "XL"
+    },
+    "visible_steps": [
+      "s"
+    ],
+    "fields": {
+      "size": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "M": {
+            "visible": true,
+            "disabled": false
+          },
+          "XL": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1234,
+      "options_cents": 400,
+      "markup_percent": -10,
+      "formula_cents": 0,
+      "unit_cents": 1500,
+      "total_cents": 7500,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1234
+        },
+        {
+          "label": "Bulk",
+          "percent": -10
+        },
+        {
+          "label": "XL",
+          "cents": 400
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: ring: fixed options, carat x clarity table, per-character engraving": {
+    "answers": {
+      "shape": "oval",
+      "metal": "rose18",
+      "carat": "1.0",
+      "clarity": "VS1",
+      "engraving": "Forever"
+    },
+    "visible_steps": [
+      "s_shape",
+      "s_metal",
+      "s_stone",
+      "s_engrave"
+    ],
+    "fields": {
+      "shape": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "round": {
+            "visible": true,
+            "disabled": false
+          },
+          "oval": {
+            "visible": true,
+            "disabled": false
+          },
+          "princess": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "metal": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "yellow14": {
+            "visible": true,
+            "disabled": false
+          },
+          "rose18": {
+            "visible": true,
+            "disabled": false
+          },
+          "plat": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "carat": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "0.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.0": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "2.0": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "clarity": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "VS1": {
+            "visible": true,
+            "disabled": false
+          },
+          "VVS1": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 95000,
+      "options_cents": 115050,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 210050,
+      "total_cents": 210050,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 95000
+        },
+        {
+          "label": "Shape · Oval",
+          "cents": 4000
+        },
+        {
+          "label": "Metal · 18K Rose Gold",
+          "cents": 32000
+        },
+        {
+          "label": "Carat",
+          "cents": 78000
+        },
+        {
+          "label": "Engraving",
+          "cents": 1050
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: ring: rule hides 2.0 ct for princess, answer falls back to default": {
+    "answers": {
+      "shape": "princess",
+      "metal": "yellow14",
+      "carat": "0.5",
+      "clarity": "VS1"
+    },
+    "visible_steps": [
+      "s_shape",
+      "s_metal",
+      "s_stone",
+      "s_engrave"
+    ],
+    "fields": {
+      "shape": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "round": {
+            "visible": true,
+            "disabled": false
+          },
+          "oval": {
+            "visible": true,
+            "disabled": false
+          },
+          "princess": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "metal": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "yellow14": {
+            "visible": true,
+            "disabled": false
+          },
+          "rose18": {
+            "visible": true,
+            "disabled": false
+          },
+          "plat": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "carat": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "0.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.0": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "2.0": {
+            "visible": false,
+            "disabled": false
+          }
+        }
+      },
+      "clarity": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "VS1": {
+            "visible": true,
+            "disabled": false
+          },
+          "VVS1": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 95000,
+      "options_cents": 6000,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 101000,
+      "total_cents": 202000,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 95000
+        },
+        {
+          "label": "Shape · Princess",
+          "cents": 6000
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: ring: engraving longer than 12 characters is invalid but still priced": {
+    "answers": {
+      "shape": "round",
+      "metal": "yellow14",
+      "carat": "0.5",
+      "clarity": "VS1",
+      "engraving": "Forever and always"
+    },
+    "visible_steps": [
+      "s_shape",
+      "s_metal",
+      "s_stone",
+      "s_engrave"
+    ],
+    "fields": {
+      "shape": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "round": {
+            "visible": true,
+            "disabled": false
+          },
+          "oval": {
+            "visible": true,
+            "disabled": false
+          },
+          "princess": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "metal": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "yellow14": {
+            "visible": true,
+            "disabled": false
+          },
+          "rose18": {
+            "visible": true,
+            "disabled": false
+          },
+          "plat": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "carat": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "0.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.0": {
+            "visible": true,
+            "disabled": false
+          },
+          "1.5": {
+            "visible": true,
+            "disabled": false
+          },
+          "2.0": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "clarity": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "VS1": {
+            "visible": true,
+            "disabled": false
+          },
+          "VVS1": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [
+      {
+        "field": "engraving",
+        "code": "max_length"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 95000,
+      "options_cents": 2400,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 97400,
+      "total_cents": 97400,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 95000
+        },
+        {
+          "label": "Engraving",
+          "cents": 2400
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: pendant: formula weight x option metal_rate + making charge": {
+    "answers": {
+      "metal": "gold18",
+      "weight_g": "4.2"
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "metal": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "gold18": {
+            "visible": true,
+            "disabled": false
+          },
+          "silver": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "weight_g": {
+        "visible": true,
+        "required": true,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 2000,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 29750,
+      "unit_cents": 31750,
+      "total_cents": 31750,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 2000
+        },
+        {
+          "label": "Metal and making",
+          "cents": 29750
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: pendant: unknown formula variable is reported and contributes nothing": {
+    "answers": {
+      "weight_g": 3
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "weight_g": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [
+      {
+        "field": null,
+        "code": "formula_error"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 2000,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 2000,
+      "total_cents": 2000,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 2000
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: ring: show_step reveals a hidden engraving step only when asked for": {
+    "answers": {
+      "extras": [
+        "engrave",
+        "box"
+      ],
+      "engraving": "A B"
+    },
+    "visible_steps": [
+      "s1",
+      "s_engrave"
+    ],
+    "fields": {
+      "extras": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "engrave": {
+            "visible": true,
+            "disabled": false
+          },
+          "box": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": true,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 10000,
+      "options_cents": 1600,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 11600,
+      "total_cents": 11600,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 10000
+        },
+        {
+          "label": "extras · Gift box",
+          "cents": 1200
+        },
+        {
+          "label": "engraving",
+          "cents": 400
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: ring: hidden step drops its answer and its required check": {
+    "answers": {
+      "extras": [
+        "box"
+      ]
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "extras": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "engrave": {
+            "visible": true,
+            "disabled": false
+          },
+          "box": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": true,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 10000,
+      "options_cents": 1200,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 11200,
+      "total_cents": 11200,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 10000
+        },
+        {
+          "label": "extras · Gift box",
+          "cents": 1200
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
+  "jewelry.json :: layers: images follow answers, text layer shows engraving, set_layer overrides": {
+    "answers": {
+      "metal": "plat",
+      "engraving": "Forever"
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "metal": {
+        "visible": true,
+        "required": false,
+        "options": {
+          "rose": {
+            "visible": true,
+            "disabled": false
+          },
+          "plat": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      "engraving": {
+        "visible": true,
+        "required": false,
+        "options": {}
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 0,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 0,
+      "total_cents": 0,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 0
+        }
+      ],
+      "components": []
+    },
+    "layers": [
+      {
+        "id": "bg",
+        "z": 0,
+        "type": "image",
+        "image": "bg.png"
+      },
+      {
+        "id": "band",
+        "z": 1,
+        "type": "image",
+        "image": "band-plat-hi.png"
+      },
+      {
+        "id": "text",
+        "z": 3,
+        "type": "text",
+        "text": "Forever",
+        "style": {}
+      }
+    ]
+  }
+}

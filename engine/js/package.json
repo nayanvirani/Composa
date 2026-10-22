@@ -1,0 +1,15 @@
+{
+  "name": "@composa/engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Composa configurator engine for the browser. Twin of app/Engine (PHP).",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/engine.test.js test/formula.test.js",
+    "snapshot": "node scripts/snapshot.mjs"
+  }
+}

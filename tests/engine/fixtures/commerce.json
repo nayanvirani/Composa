@@ -1,0 +1,137 @@
+[
+  {
+    "id": "hoodie",
+    "name": "variants: Shopify Color and Size resolve to one variant; embroidery adds on top",
+    "definition": {
+      "steps": [
+        { "key": "s_color", "title": "Color", "source": "shopify_option", "fields": [
+          { "key": "color", "type": "swatch", "required": true, "variant_option": "Color", "options": [ { "value": "Black" }, { "value": "Navy" }, { "value": "Forest" } ] }
+        ] },
+        { "key": "s_size", "title": "Size", "source": "shopify_option", "fields": [
+          { "key": "size", "type": "buttons", "required": true, "variant_option": "Size", "options": [ { "value": "S" }, { "value": "M" }, { "value": "L" } ] }
+        ] },
+        { "key": "s_emb", "title": "Embroidery", "fields": [
+          { "key": "embroidery", "type": "text", "price_rule": { "type": "fixed", "amount": 8 } },
+          { "key": "audience", "type": "buttons", "options": [ { "value": "kids" }, { "value": "adult" } ] }
+        ] }
+      ],
+      "rules": [
+        { "id": "kids", "conditions": { "field": "audience", "op": "eq", "value": "kids" }, "actions": [ { "type": "set_variant_option", "option_name": "Size", "value": "S" } ] }
+      ]
+    },
+    "answers": { "color": "Navy", "size": "M", "embroidery": "NORTH" },
+    "context": {
+      "base_price_cents": 1,
+      "variants": [
+        { "id": "gid://shopify/ProductVariant/1", "price_cents": 4900, "available": true, "options": { "Color": "Black", "Size": "S" } },
+        { "id": "gid://shopify/ProductVariant/2", "price_cents": 4900, "available": true, "options": { "Color": "Black", "Size": "M" } },
+        { "id": "gid://shopify/ProductVariant/3", "price_cents": 5300, "available": true, "options": { "Color": "Black", "Size": "L" } },
+        { "id": "gid://shopify/ProductVariant/4", "price_cents": 4900, "available": true, "options": { "Color": "Navy", "Size": "S" } },
+        { "id": "gid://shopify/ProductVariant/5", "price_cents": 4900, "available": true, "options": { "Color": "Navy", "Size": "M" } },
+        { "id": "gid://shopify/ProductVariant/6", "price_cents": 5300, "available": false, "options": { "Color": "Navy", "Size": "L" } },
+        { "id": "gid://shopify/ProductVariant/7", "price_cents": 4900, "available": false, "options": { "Color": "Forest", "Size": "S" } },
+        { "id": "gid://shopify/ProductVariant/8", "price_cents": 4900, "available": false, "options": { "Color": "Forest", "Size": "M" } }
+      ]
+    },
+    "expect": {
+      "valid": true,
+      "variant_id": "gid://shopify/ProductVariant/5",
+      "unit_cents": 5700,
+      "disabled_options": { "color": ["Forest"], "size": ["L"] },
+      "enabled_options": { "color": ["Black", "Navy"], "size": ["S", "M"] }
+    }
+  },
+  {
+    "name": "variants: a sold-out pick is cleared and the required size is reported",
+    "definition": "@hoodie",
+    "answers": { "color": "Navy", "size": "L" },
+    "context": "@hoodie",
+    "expect": { "valid": false, "errors": ["required"], "variant_id": null, "absent_answers": ["size"] }
+  },
+  {
+    "name": "variants: a custom answer sets the Shopify Size option",
+    "definition": "@hoodie",
+    "answers": { "color": "Black", "size": "L", "audience": "kids" },
+    "context": "@hoodie",
+    "expect": { "valid": true, "variant_id": "gid://shopify/ProductVariant/1", "unit_cents": 4900, "answers": { "size": "S" } }
+  },
+  {
+    "name": "percent rush and quantity tiers apply to the unit price",
+    "definition": {
+      "steps": [
+        { "key": "s1", "title": "Finish", "fields": [
+          { "key": "finish", "type": "buttons", "options": [ { "value": "matte", "default": true }, { "value": "polished", "price_rule": { "type": "fixed", "amount": 5 } } ] },
+          { "key": "rush", "type": "checkbox", "options": [ { "value": "rush", "label": "Rush making", "price_rule": { "type": "percent", "percent": 15 } } ] }
+        ] }
+      ],
+      "price_rules": [
+        { "id": "tiers", "label": "Volume price", "type": "tiered", "basis": "quantity", "tiers": [ { "min": 1, "max": 9, "amount": 0 }, { "min": 10, "amount": -4 } ] }
+      ]
+    },
+    "answers": { "finish": "polished", "rush": ["rush"] },
+    "context": { "base_price_cents": 2000, "quantity": 10 },
+    "expect": { "valid": true, "markup_percent": 15, "options_cents": 100, "unit_cents": 2415, "total_cents": 24150 }
+  },
+  {
+    "id": "table",
+    "name": "furniture: W x H priced per square foot, rounded to end in .99",
+    "definition": {
+      "settings": { "rounding": { "mode": "ending", "ending": 0.99 } },
+      "steps": [
+        { "key": "s1", "title": "Size", "fields": [
+          { "key": "size", "type": "dimensions", "required": true, "validation": { "min_w": 30, "max_w": 300, "min_h": 12, "max_h": 120 }, "price_rule": { "type": "per_unit", "basis": "area", "amount": 12, "divisor": 144 } }
+        ] },
+        { "key": "s2", "title": "Wood", "fields": [
+          { "key": "wood", "type": "dropdown", "options": [ { "value": "oak", "default": true }, { "value": "walnut", "price_rule": { "type": "fixed", "amount": 150 } } ] }
+        ] }
+      ]
+    },
+    "answers": { "size": { "w": 60, "h": 24 }, "wood": "walnut" },
+    "context": { "base_price_cents": 15000 },
+    "expect": { "valid": true, "unit_cents": 42099 }
+  },
+  {
+    "name": "furniture: width below the minimum is invalid",
+    "definition": "@table",
+    "answers": { "size": { "w": 10, "h": 24 } },
+    "context": { "base_price_cents": 15000 },
+    "expect": { "valid": false, "errors": ["min_w"], "unit_cents": 17099 }
+  },
+  {
+    "id": "gift",
+    "name": "gift box: repeatable step prices every item (beyond max_repeats is ignored)",
+    "definition": {
+      "steps": [
+        { "key": "items", "title": "Add items", "repeatable": true, "max_repeats": 3, "required": true, "fields": [
+          { "key": "product", "type": "dropdown", "required": true, "options": [
+            { "value": "candle", "price_rule": { "type": "fixed", "amount": 18 } },
+            { "value": "soap", "price_rule": { "type": "fixed", "amount": 9 } }
+          ] }
+        ] },
+        { "key": "card", "title": "Card", "fields": [ { "key": "message", "type": "text", "validation": { "max_length": 120 } } ] }
+      ]
+    },
+    "answers": { "items": [ { "product": "candle" }, { "product": "soap" }, { "product": "candle" }, { "product": "soap" } ], "message": "Happy birthday" },
+    "context": { "base_price_cents": 1500 },
+    "expect": { "valid": true, "unit_cents": 6000 }
+  },
+  {
+    "name": "gift box: an empty required repeatable step is reported",
+    "definition": "@gift",
+    "answers": {},
+    "context": { "base_price_cents": 1500 },
+    "expect": { "valid": false, "errors": ["required"], "unit_cents": 1500 }
+  },
+  {
+    "name": "price rule only when quantity reaches 5; nearest rounding to 5.00",
+    "definition": {
+      "settings": { "rounding": { "mode": "nearest", "step": 5 } },
+      "steps": [ { "key": "s", "title": "Size", "fields": [ { "key": "size", "type": "buttons", "options": [ { "value": "M", "default": true }, { "value": "XL" } ] } ] } ],
+      "rules": [ { "id": "xl", "conditions": { "field": "size", "op": "eq", "value": "XL" }, "actions": [ { "type": "add_price", "amount": 4, "label": "XL" } ] } ],
+      "price_rules": [ { "id": "bulk", "label": "Bulk", "type": "percent", "percent": -10, "when": { "field": "$quantity", "op": "gte", "value": 5 } } ]
+    },
+    "answers": { "size": "XL" },
+    "context": { "base_price_cents": 1234, "quantity": 5 },
+    "expect": { "valid": true, "markup_percent": -10, "options_cents": 400, "unit_cents": 1500, "total_cents": 7500 }
+  }
+]
