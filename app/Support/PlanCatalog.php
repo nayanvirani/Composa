@@ -11,6 +11,17 @@ final class PlanCatalog
 {
     public const PRICING_TYPES = ['fixed', 'percent', 'per_char', 'per_unit', 'tiered', 'table', 'formula'];
 
+    public const LIMIT_LABELS = [
+        'configurators' => 'Published configurators',
+        'drafts' => 'Draft configurators',
+        'steps' => 'Steps per configurator',
+        'options' => 'Options per configurator',
+        'rules' => 'Rules per configurator',
+        'products' => 'Assigned products',
+        'storage_mb' => 'Upload storage (MB)',
+        'languages' => 'Languages',
+    ];
+
     /** @return list<array<string,mixed>> */
     public static function defaults(): array
     {

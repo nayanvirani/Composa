@@ -3,6 +3,7 @@
 use App\Jobs\CleanupStorefrontData;
 use App\Jobs\PurgeUninstalledShops;
 use App\Jobs\RollupAnalytics;
+use App\Services\LifecycleMail;
 use App\Services\PlanEnforcer;
 use Illuminate\Support\Facades\Schedule;
 
@@ -19,6 +20,9 @@ Schedule::job(new RollupAnalytics)->dailyAt('01:15')->name('rollup-analytics')->
 
 // Expired configurations and abandoned shopper uploads.
 Schedule::job(new CleanupStorefrontData)->dailyAt('02:30')->name('cleanup-storefront-data')->withoutOverlapping();
+
+// Trial reminders and plan limit warnings (each sent once).
+Schedule::call(fn () => app(LifecycleMail::class)->daily())->dailyAt('09:00')->name('lifecycle-emails')->withoutOverlapping();
 
 // Horizon queue metrics.
 Schedule::command('horizon:snapshot')->everyFiveMinutes();

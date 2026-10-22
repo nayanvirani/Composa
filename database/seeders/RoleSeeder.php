@@ -27,10 +27,10 @@ class RoleSeeder extends Seeder
             Role::query()->firstOrCreate(['name' => $role, 'guard_name' => 'web'])->syncPermissions($permissions);
         }
 
-        if ($email = env('ADMIN_OWNER_EMAIL')) {
+        if ($email = config('composa.admin.owner.email')) {
             $owner = User::query()->firstOrCreate(['email' => strtolower($email)], [
-                'name' => env('ADMIN_OWNER_NAME', Str::before($email, '@')),
-                'password' => env('ADMIN_OWNER_PASSWORD') ?: null,
+                'name' => config('composa.admin.owner.name') ?: Str::before($email, '@'),
+                'password' => config('composa.admin.owner.password') ?: null,
                 'active' => true,
             ]);
             $owner->assignRole('Owner');

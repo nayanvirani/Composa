@@ -19,6 +19,19 @@ class Page extends Model
         return ['sections' => 'array', 'seo' => 'array', 'publish_at' => 'datetime'];
     }
 
+    protected static function booted(): void
+    {
+        // Every content change keeps a snapshot for the page history (last 50 per page).
+        static::saved(function (Page $page) {
+            if (! $page->wasChanged(['title', 'sections', 'seo', 'status']) && ! $page->wasRecentlyCreated) {
+                return;
+            }
+            $page->revisions()->create(['user_id' => auth()->id(), 'snapshot' => $page->only(['title', 'sections', 'seo', 'status', 'template'])]);
+            $keep = $page->revisions()->limit(50)->pluck('id');
+            PageRevision::query()->where('page_id', $page->id)->whereNotIn('id', $keep)->delete();
+        });
+    }
+
     public function revisions(): HasMany
     {
         return $this->hasMany(PageRevision::class)->latest('created_at');
@@ -32,7 +45,7 @@ class Page extends Model
     /** @return list<array{type:string,visible:bool,data:array}> */
     public function visibleSections(): array
     {
-        return array_values(array_filter($this->sections ?? [], fn ($s) => ($s['visible'] ?? true) && ! empty($s['type'])));
+        return array_values(array_filter($this->sections ?? [], fn ($s) => ($s['visible'] ?? true) && ! ($s['data']['hidden'] ?? false) && ! empty($s['type'])));
     }
 
     public function section(string $type): ?array

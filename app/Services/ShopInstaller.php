@@ -58,8 +58,12 @@ class ShopInstaller
             Log::warning('Billing sync failed for '.$domain.': '.$e->getMessage());
         }
         SyncStorefrontMetafields::dispatch($shop->id);
+        if (! $shop->wasRecentlyCreated && ! $reinstall) {
+            return $shop->refresh();
+        }
+        app(LifecycleMail::class)->send($shop->refresh(), 'welcome', once: 'welcome:'.$shop->installed_at->toDateString());
 
-        return $shop->refresh();
+        return $shop;
     }
 
     /** Re-reads name, currency, locales and Shopify plan (also used by the shop/update webhook). */
@@ -83,7 +87,10 @@ class ShopInstaller
             'primary_locale' => $primary,
             'locales' => $locales ?: [$primary],
         ]);
-        $shop->cart_mode = CartTransformSetup::modeFor($shop);
+        // Keep the discount fallback after a cart transform conflict, and any mode staff chose.
+        if (! $shop->setting('cart_transform_conflict') && ! $shop->setting('cart_mode_locked')) {
+            $shop->cart_mode = CartTransformSetup::modeFor($shop);
+        }
         $shop->save();
     }
 
@@ -96,5 +103,6 @@ class ShopInstaller
             'uninstalled_at' => now(),
             'purge_after' => now()->addHours(config('composa.uninstall_purge_hours')),
         ])->save();
+        app(LifecycleMail::class)->send($shop, 'uninstalled', once: 'uninstalled:'.now()->toDateString());
     }
 }

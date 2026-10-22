@@ -39,6 +39,9 @@ export default function DisplayTab({ meta, setMeta, product, setProduct, currenc
                         <Text as="h3" variant="headingSm">General</Text>
                         <TextField label="Name (internal)" value={meta.name} onChange={(v) => setMeta({ name: v })} autoComplete="off" />
                         <RadioButton label="Popup / drawer (full-screen sheet on mobile)" checked={meta.display_mode === 'popup'} onChange={() => setMeta({ display_mode: 'popup' })} />
+                        {meta.display_mode === 'popup' && (
+                            <Select label="Popup style on desktop" value={display.popup_style || 'modal'} onChange={(v) => setDisplay('popup_style', v)} options={[{ label: 'Centred window', value: 'modal' }, { label: 'Side drawer', value: 'drawer' }]} />
+                        )}
                         <RadioButton label={`Dedicated page — /apps/composa/configure/${meta.handle} (shareable, SEO-friendly)`} checked={meta.display_mode === 'page'} onChange={() => setMeta({ display_mode: 'page' })} />
                     </BlockStack>
                 </Card>

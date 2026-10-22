@@ -37,7 +37,7 @@ function Configurator({ opts, onClose }) {
   const t = useMemo(() => translator(definition, locale), [definition, locale]);
   const info = useMemo(() => currencyInfo(opts.currency), [opts.currency]);
   const money = (c) => formatMoney(c, info, locale);
-  const variants = useMemo(() => (config.variant_mode === 'none' ? null : engineVariants(product, info.rate)), [product, info.rate]);
+  const variants = useMemo(() => (config.variant_mode === 'base' ? null : engineVariants(product, info.rate)), [product, info.rate]);
   const startVariant = useMemo(() => {
     const id = opts.variantId || numericId(config.base_variant_id);
     const v = product?.variants?.find((x) => String(x.id) === String(id)) || product?.variants?.[0];
@@ -256,7 +256,7 @@ function Configurator({ opts, onClose }) {
   );
 
   return (
-    <div class={'cmp-root' + (opts.mount ? ' is-page' : ' is-modal cmp-' + (config.display_mode || 'modal'))} role={opts.mount ? undefined : 'dialog'} aria-modal={opts.mount ? undefined : 'true'} aria-label={config.name}>
+    <div class={'cmp-root' + (opts.mount ? ' is-page' : ' is-modal cmp-' + (display.popup_style || 'modal'))} role={opts.mount ? undefined : 'dialog'} aria-modal={opts.mount ? undefined : 'true'} aria-label={config.name}>
       {!opts.mount ? <div class="cmp-scrim" onClick={onClose} /> : null}
       <div class="cmp-panel">
         <header class="cmp-head">

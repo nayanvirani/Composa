@@ -20,6 +20,13 @@ class PlanEnforcer
         $settings = $shop->settings ?? [];
         if ($over && empty($settings['downgrade_grace_until'])) {
             $settings['downgrade_grace_until'] = now()->addDays(config('composa.limits.downgrade_grace_days'))->toIso8601String();
+            $shop->forceFill(['settings' => $settings])->save();
+            app(LifecycleMail::class)->send($shop, 'downgrade_grace', [
+                'limit' => $limits->limit('configurators'), 'count' => $limits->usage()['configurators'],
+                'grace_ends_at' => now()->addDays(config('composa.limits.downgrade_grace_days'))->toFormattedDayDateString(),
+            ], 'downgrade:'.$settings['downgrade_grace_until']);
+
+            return;
         } elseif (! $over) {
             unset($settings['downgrade_grace_until']);
         }

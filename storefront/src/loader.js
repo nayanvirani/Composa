@@ -57,6 +57,11 @@
     var key = el.getAttribute('data-configurator-key');
     var config = configFor(key);
     if (!config) return;
+    // Configurators set to "dedicated page" open there from every Customize button.
+    if (config.display_mode === 'page' && mode !== 'page' && config.handle) {
+      location.href = (settings.proxy || '/apps/composa') + '/configure/' + config.handle;
+      return;
+    }
     el.setAttribute('aria-busy', 'true');
     loadUI().then(function (UI) {
       el.removeAttribute('aria-busy');

@@ -9,7 +9,7 @@ return [
         'api_key' => env('SHOPIFY_API_KEY'),
         'api_secret' => env('SHOPIFY_API_SECRET'),
         'api_version' => env('SHOPIFY_API_VERSION', '2026-07'),
-        'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets'),
+        'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets,write_discounts'),
         'app_handle' => env('SHOPIFY_APP_HANDLE', 'composa'),
         // App Proxy: Shopify forwards https://{shop}/{prefix}/{subpath}/* to APP_URL/proxy/*
         'proxy_prefix' => env('SHOPIFY_PROXY_PREFIX', 'apps'),
@@ -30,6 +30,9 @@ return [
         'force_discount_fallback' => (bool) env('COMPOSA_FORCE_DISCOUNT_FALLBACK', false),
         'configuration_ttl_days' => 30,
     ],
+
+    // Disk for website media uploaded in super admin.
+    'media_disk' => env('COMPOSA_MEDIA_DISK', 'public'),
 
     'uploads' => [
         'disk' => env('COMPOSA_UPLOAD_DISK', 's3'),
@@ -55,6 +58,8 @@ return [
         'google_sso' => (bool) env('ADMIN_GOOGLE_SSO', false),
         'allowed_email_domains' => array_filter(explode(',', (string) env('ADMIN_ALLOWED_EMAIL_DOMAINS', ''))),
         'impersonation_minutes' => 30,
+        // First Owner account, created by RoleSeeder.
+        'owner' => ['email' => env('ADMIN_OWNER_EMAIL'), 'name' => env('ADMIN_OWNER_NAME'), 'password' => env('ADMIN_OWNER_PASSWORD')],
     ],
 
     'storefront' => [
