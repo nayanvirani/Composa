@@ -1,0 +1,20 @@
+{
+  "embed": {
+    "auto_button": "Add the Customize button automatically",
+    "auto_button_info": "Turn off if you place the Customize button block yourself.",
+    "collection_cards": "Show a Customize link on collection cards",
+    "accent": "Button colour (leave empty to use your theme)",
+    "accent_text": "Button text colour"
+  },
+  "block": {
+    "name": "Customize button",
+    "product": "Product",
+    "product_info": "Leave empty on product pages. Pick a product to feature a configurator anywhere else.",
+    "label": "Button label (overrides the configurator setting)",
+    "style": "Style",
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "replace_add_to_cart": "Hide the theme's Add to cart button",
+    "show_from_price": "Show the starting price"
+  }
+}

@@ -1,0 +1,16 @@
+api_version = "2026-07"
+
+[[extensions]]
+name = "Composa cart transform"
+handle = "composa-cart-transform"
+type = "function"
+description = "Applies the signed configured price to Composa cart lines."
+
+  [[extensions.targeting]]
+  target = "cart.transform.run"
+  input_query = "src/cart_transform_run.graphql"
+  export = "cart-transform-run"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"

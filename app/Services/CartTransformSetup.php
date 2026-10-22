@@ -40,7 +40,8 @@ class CartTransformSetup
                 $id = $created['cartTransform']['id'] ?? null;
             } catch (\RuntimeException $e) {
                 Monitor::record(Monitor::CART_TRANSFORM_CONFLICT, 'Could not register the cart transform: '.$e->getMessage(), $shop, 'warning');
-                $shop->forceFill(['settings' => array_merge($shop->settings ?? [], ['cart_transform_conflict' => true])])->save();
+                $shop->forceFill(['cart_mode' => 'discount', 'settings' => array_merge($shop->settings ?? [], ['cart_transform_conflict' => true])])->save();
+                $this->ensureDiscountFallback($shop);
 
                 return null;
             }
@@ -48,6 +49,51 @@ class CartTransformSetup
 
         $shop->forceFill(['cart_transform_id' => $id])->save();
         $this->writeConfig($shop);
+        if ($shop->cart_mode === 'discount') {
+            $this->ensureDiscountFallback($shop);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Fallback when the cart transform can't be used: an automatic app discount whose function
+     * lowers each signed line from the base variant's listed price to the configured price.
+     */
+    public function ensureDiscountFallback(Shop $shop): ?string
+    {
+        $api = AdminApi::for($shop);
+        $config = [[
+            'namespace' => '$app:composa',
+            'key' => 'config',
+            'type' => 'json',
+            'value' => json_encode(['v' => 1, 'shop' => $shop->domain, 'secret' => $shop->ensureSigningSecret(), 'message' => 'Configured price']),
+        ]];
+
+        if ($shop->discount_id) {
+            $api->mutate(
+                'mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { metafields { id } userErrors { field message } } }',
+                ['m' => [array_merge($config[0], ['ownerId' => $shop->discount_id])]],
+                'metafieldsSet',
+            );
+
+            return $shop->discount_id;
+        }
+
+        $created = $api->mutate(
+            'mutation($d: DiscountAutomaticAppInput!) { discountAutomaticAppCreate(automaticAppDiscount: $d) { automaticAppDiscount { discountId } userErrors { field message } } }',
+            ['d' => [
+                'title' => 'Composa configured price',
+                'functionHandle' => config('composa.shopify.discount_function'),
+                'discountClasses' => ['PRODUCT'],
+                'startsAt' => now()->toIso8601String(),
+                'combinesWith' => ['orderDiscounts' => true, 'productDiscounts' => true, 'shippingDiscounts' => true],
+                'metafields' => $config,
+            ]],
+            'discountAutomaticAppCreate',
+        );
+        $id = $created['automaticAppDiscount']['discountId'] ?? null;
+        $shop->forceFill(['discount_id' => $id])->save();
 
         return $id;
     }

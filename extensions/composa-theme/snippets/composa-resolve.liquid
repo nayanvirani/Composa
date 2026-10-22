@@ -1,0 +1,24 @@
+{%- comment -%}
+  Finds the configurator for a product from the composa.assignments shop metafield
+  (rows sorted by priority). Outputs the configurator key, or nothing. `render` has its own
+  scope, so callers wrap the render in a capture and strip the result.
+{%- endcomment -%}
+{%- assign composa_key = '' -%}
+{%- assign composa_tags = resolve_product.tags | join: '|' | downcase | prepend: '|' | append: '|' -%}
+{%- assign composa_collections = resolve_product.collections | map: 'id' | join: '|' | prepend: '|' | append: '|' -%}
+{%- assign composa_vendor = resolve_product.vendor | downcase -%}
+{%- for row in shop.metafields.composa.assignments.value -%}
+  {%- assign row_id = row.id | append: '' -%}
+  {%- assign product_id = resolve_product.id | append: '' -%}
+  {%- assign needle = row_id | prepend: '|' | append: '|' -%}
+  {%- if row.t == 'product' and row_id == product_id -%}
+    {%- assign composa_key = row.c -%}{%- break -%}
+  {%- elsif row.t == 'collection' and composa_collections contains needle -%}
+    {%- assign composa_key = row.c -%}{%- break -%}
+  {%- elsif row.t == 'tag' and composa_tags contains needle -%}
+    {%- assign composa_key = row.c -%}{%- break -%}
+  {%- elsif row.t == 'vendor' and composa_vendor == row_id -%}
+    {%- assign composa_key = row.c -%}{%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+{{- composa_key -}}

@@ -1,0 +1,67 @@
+{%- comment -%}
+  Composa app embed. Loads a ~4 KB loader on every page; the configurator itself is fetched on
+  first open. Configurator definitions come from shop metafields, so no request to the app is
+  needed to render the page.
+{%- endcomment -%}
+{%- assign composa_settings = shop.metafields.composa.settings.value -%}
+{%- if composa_settings != blank -%}
+  <script type="application/json" data-composa-settings>{{ composa_settings | json }}</script>
+
+  {%- if template.name == 'product' and product -%}
+    {%- capture composa_key -%}{%- render 'composa-resolve', resolve_product: product -%}{%- endcapture -%}{%- assign composa_key = composa_key | strip -%}
+    {%- if composa_key != '' -%}
+      {%- assign composa_config = shop.metafields.composa[composa_key].value -%}
+      {%- if composa_config != blank -%}
+        <script type="application/json" data-composa-config="{{ composa_key }}">{{ composa_config | json }}</script>
+        <script type="application/json" data-composa-product>{{ product | json }}</script>
+        {%- if block.settings.auto_button -%}
+          {%- assign button = composa_config.display.button -%}
+          <template data-composa-auto data-position="{{ button.product_position | default: 'replace_add_to_cart' }}">
+            <button type="button" class="button button--primary composa-button" data-composa-open data-configurator-key="{{ composa_key }}"{% if button.product_position == 'replace_add_to_cart' %} data-replace-atc="true"{% endif %}>
+              {{- button.label | default: 'Customize' | escape -}}
+            </button>
+          </template>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if block.settings.collection_cards and collection and collection.products.size > 0 -%}
+    {%- capture composa_cards -%}
+      {%- for p in collection.products -%}
+        {%- capture composa_key -%}{%- render 'composa-resolve', resolve_product: p -%}{%- endcapture -%}{%- assign composa_key = composa_key | strip -%}
+        {%- if composa_key != '' -%}
+          {%- assign c = shop.metafields.composa[composa_key].value -%}
+          {%- if c.display.button.collection_cards != false -%}"{{ p.handle }}":{{ c.display.button.label | default: 'Customize' | json }},{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if composa_cards != '' -%}
+      <script type="application/json" data-composa-cards>{{ '{' }}{{ composa_cards | remove_last: ',' }}{{ '}' }}</script>
+    {%- endif -%}
+  {%- endif -%}
+
+  <script
+    src="{{ 'composa.js' | asset_url }}"
+    data-composa-embed
+    data-ui="{{ 'composa-ui.js' | asset_url }}"
+    data-css="{{ 'composa.css' | asset_url }}"
+    defer
+  ></script>
+  {%- if block.settings.accent != blank -%}
+    <style>.composa, [data-composa-page] { --cmp-accent: {{ block.settings.accent }}; --cmp-accent-text: {{ block.settings.accent_text | default: '#ffffff' }}; }</style>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Composa",
+  "target": "body",
+  "settings": [
+    { "type": "checkbox", "id": "auto_button", "label": "t:embed.auto_button", "info": "t:embed.auto_button_info", "default": true },
+    { "type": "checkbox", "id": "collection_cards", "label": "t:embed.collection_cards", "default": true },
+    { "type": "color", "id": "accent", "label": "t:embed.accent" },
+    { "type": "color", "id": "accent_text", "label": "t:embed.accent_text" }
+  ]
+}
+{% endschema %}

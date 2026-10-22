@@ -1,0 +1,5 @@
+{
+  "composa": {
+    "from": "From {{ price }}"
+  }
+}

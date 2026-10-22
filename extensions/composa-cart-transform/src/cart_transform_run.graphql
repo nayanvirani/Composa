@@ -1,0 +1,28 @@
+query CartTransformRunInput {
+  presentmentCurrencyRate
+  cart {
+    lines {
+      id
+      quantity
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+        }
+      }
+      configId: attribute(key: "_config_id") { value }
+      price: attribute(key: "_price") { value }
+      base: attribute(key: "_base") { value }
+      currency: attribute(key: "_cur") { value }
+      signature: attribute(key: "_sig") { value }
+      linked: attribute(key: "_lnk") { value }
+      title: attribute(key: "_title") { value }
+      image: attribute(key: "_img") { value }
+    }
+  }
+  cartTransform {
+    metafield(namespace: "$app:composa", key: "config") {
+      jsonValue
+    }
+  }
+}

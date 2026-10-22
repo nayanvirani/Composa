@@ -1,0 +1,121 @@
+/* Composa storefront. Inherits the theme's fonts and colours; merchants can override the variables. */
+.composa, [data-composa-page] {
+  --cmp-accent: var(--color-button, #111);
+  --cmp-accent-text: var(--color-button-text, #fff);
+  --cmp-text: inherit;
+  --cmp-muted: rgba(0, 0, 0, .6);
+  --cmp-line: rgba(0, 0, 0, .14);
+  --cmp-bg: var(--color-background, #fff);
+  --cmp-soft: rgba(0, 0, 0, .04);
+  --cmp-radius: 8px;
+  --cmp-danger: #b42318;
+  font: inherit;
+}
+.cmp-lock, .cmp-lock body { overflow: hidden; }
+.cmp-root * { box-sizing: border-box; }
+.cmp-root.is-modal { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; }
+.cmp-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, .45); animation: cmp-fade .15s ease-out; }
+.cmp-panel { position: relative; display: flex; flex-direction: column; background: var(--cmp-bg); color: var(--cmp-text); width: min(1080px, 100%); max-height: min(92vh, 900px); border-radius: var(--cmp-radius); overflow: hidden; box-shadow: 0 24px 64px rgba(0, 0, 0, .25); }
+.cmp-drawer.is-modal { justify-content: flex-end; }
+.cmp-drawer .cmp-panel { width: min(560px, 100%); height: 100vh; max-height: none; border-radius: 0; animation: cmp-slide .2s ease-out; }
+.is-page .cmp-panel { box-shadow: none; max-height: none; border: 1px solid var(--cmp-line); }
+.cmp-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--cmp-line); }
+.cmp-close { border: 0; background: none; font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; color: inherit; }
+.cmp-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: auto; flex: 1; }
+.cmp-drawer .cmp-body { grid-template-columns: 1fr; }
+.cmp-visual { background: var(--cmp-soft); padding: 20px; position: sticky; top: 0; align-self: start; }
+.cmp-preview { position: relative; aspect-ratio: 1; container-type: inline-size; }
+.cmp-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.cmp-layer-text { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+.cmp-form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.cmp-progress { display: flex; flex-direction: column; gap: 6px; font-size: .85em; color: var(--cmp-muted); }
+.cmp-bar { height: 3px; background: var(--cmp-line); border-radius: 2px; }
+.cmp-bar i { display: block; height: 100%; background: var(--cmp-accent); border-radius: 2px; transition: width .2s; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.cmp-chips button { border: 1px solid var(--cmp-line); background: none; border-radius: 99px; padding: 4px 12px; font: inherit; font-size: .85em; cursor: pointer; color: var(--cmp-muted); }
+.cmp-chips .is-on { border-color: var(--cmp-accent); color: inherit; font-weight: 600; }
+.cmp-chips .is-done { color: inherit; }
+.cmp-step h3 { margin: 0 0 6px; font-size: 1.2em; }
+.cmp-field { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.cmp-label { font-weight: 600; }
+.cmp-help { margin: 0; color: var(--cmp-muted); font-size: .9em; }
+.cmp-error { margin: 0; color: var(--cmp-danger); font-size: .9em; }
+.has-error input, .has-error select { border-color: var(--cmp-danger); }
+.cmp-root input[type=text], .cmp-root input[type=number], .cmp-root select { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--cmp-line); border-radius: var(--cmp-radius); background: var(--cmp-bg); color: inherit; }
+.cmp-meta { display: flex; justify-content: space-between; color: var(--cmp-muted); font-size: .85em; margin-top: 4px; }
+.cmp-dims { display: flex; align-items: center; gap: 8px; }
+.cmp-dims label { display: flex; align-items: center; gap: 6px; flex: 1; }
+.cmp-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.cmp-choice { display: flex; align-items: center; gap: 10px; border: 1px solid var(--cmp-line); background: var(--cmp-bg); color: inherit; font: inherit; border-radius: var(--cmp-radius); padding: 10px 14px; cursor: pointer; text-align: left; }
+.cmp-choice:hover { border-color: currentColor; }
+.cmp-choice.is-on { border-color: var(--cmp-accent); box-shadow: inset 0 0 0 1px var(--cmp-accent); }
+.cmp-choice.is-off { opacity: .45; cursor: not-allowed; text-decoration: line-through; }
+.cmp-choice:focus-visible, .cmp-btn:focus-visible, .cmp-chips button:focus-visible { outline: 2px solid var(--cmp-accent); outline-offset: 2px; }
+.cmp-choice-text { display: flex; flex-direction: column; flex: 1; }
+.cmp-choice-desc { font-size: .82em; color: var(--cmp-muted); }
+.cmp-choice-price { font-size: .85em; color: var(--cmp-muted); white-space: nowrap; }
+.cmp-badge { font-size: .72em; background: var(--cmp-accent); color: var(--cmp-accent-text); border-radius: 99px; padding: 2px 8px; }
+.cmp-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.cmp-tiles .cmp-choice { flex-direction: column; align-items: stretch; padding: 8px; }
+.cmp-tile-img { aspect-ratio: 1; background: var(--cmp-soft) center/cover no-repeat; border-radius: calc(var(--cmp-radius) - 3px); }
+.cmp-swatches .cmp-choice { padding: 4px; border-radius: 99px; }
+.cmp-swatches .cmp-choice-text, .cmp-swatches .cmp-badge { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.cmp-swatch { width: 32px; height: 32px; border-radius: 50%; display: block; border: 1px solid var(--cmp-line); }
+.cmp-size_grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.cmp-size_grid .cmp-choice { justify-content: center; text-align: center; }
+.cmp-radio, .cmp-checkbox { flex-direction: column; }
+.cmp-dot { width: 18px; height: 18px; border: 1.5px solid var(--cmp-line); border-radius: 50%; flex: none; }
+.cmp-dot.is-box { border-radius: 4px; }
+.is-on .cmp-dot { border: 6px solid var(--cmp-accent); }
+.is-on .cmp-dot.is-box { border-width: 9px; }
+.cmp-file-drop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 22px; border: 1.5px dashed var(--cmp-line); border-radius: var(--cmp-radius); cursor: pointer; }
+.cmp-file-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.cmp-file-drop small { color: var(--cmp-muted); }
+.cmp-file-done { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--cmp-soft); border-radius: var(--cmp-radius); }
+.cmp-repeat-item { border: 1px solid var(--cmp-line); border-radius: var(--cmp-radius); padding: 4px 14px 14px; margin: 0 0 10px; }
+.cmp-repeat-item legend { padding: 0 6px; font-weight: 600; }
+.cmp-link { border: 0; background: none; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; font-size: .9em; }
+.cmp-review-step { border-bottom: 1px solid var(--cmp-line); padding: 10px 0; }
+.cmp-review-head { display: flex; justify-content: space-between; }
+.cmp-review dl, .cmp-breakdown dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 8px 0 0; font-size: .92em; }
+.cmp-review dt, .cmp-breakdown dt { color: var(--cmp-muted); }
+.cmp-review dd, .cmp-breakdown dd { margin: 0; text-align: right; }
+.cmp-breakdown summary { cursor: pointer; font-weight: 600; }
+.cmp-qty { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-weight: 600; }
+.cmp-qty span { display: flex; border: 1px solid var(--cmp-line); border-radius: var(--cmp-radius); }
+.cmp-qty button { border: 0; background: none; width: 36px; font-size: 18px; cursor: pointer; color: inherit; }
+.cmp-root .cmp-qty input { width: 56px; border: 0; text-align: center; padding: 8px 0; }
+.cmp-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; border-top: 1px solid var(--cmp-line); background: var(--cmp-bg); }
+.cmp-foot.is-sticky { position: sticky; bottom: 0; }
+.cmp-total { display: flex; flex-direction: column; }
+.cmp-total span { font-size: .8em; color: var(--cmp-muted); }
+.cmp-total strong { font-size: 1.25em; }
+.cmp-actions { display: flex; gap: 8px; }
+.cmp-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; border: 1px solid var(--cmp-accent); background: var(--cmp-accent); color: var(--cmp-accent-text); border-radius: var(--cmp-radius); font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
+.cmp-btn.is-ghost { background: none; color: inherit; border-color: var(--cmp-line); }
+.cmp-btn[disabled] { opacity: .6; cursor: progress; }
+.cmp-done { padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.cmp-done img { max-width: 240px; border-radius: var(--cmp-radius); }
+.cmp-done-title { font-size: 1.3em; font-weight: 600; margin: 0; }
+.composa-card-link { display: inline-block; margin-top: 6px; font-size: .9em; text-decoration: underline; }
+.composa-cart-summary { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: .85em; margin: 6px 0 0; }
+.composa-cart-summary dt { opacity: .7; }
+.composa-cart-summary dd { margin: 0; }
+[data-composa-open][aria-busy=true] { opacity: .6; cursor: progress; }
+
+/* Phones: full-height bottom sheet, preview on top. */
+@media (max-width: 749px) {
+  .cmp-root.is-modal { align-items: flex-end; }
+  .cmp-panel, .cmp-drawer .cmp-panel { width: 100%; height: 94vh; max-height: none; border-radius: 14px 14px 0 0; animation: cmp-up .2s ease-out; }
+  .cmp-body { grid-template-columns: 1fr; }
+  .cmp-visual { position: relative; padding: 12px; }
+  .cmp-preview { max-height: 34vh; aspect-ratio: auto; height: 34vh; }
+  .cmp-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .cmp-btn { padding: 0 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-panel, .cmp-scrim, .cmp-bar i { animation: none; transition: none; }
+}
+@keyframes cmp-fade { from { opacity: 0; } }
+@keyframes cmp-slide { from { transform: translateX(100%); } }
+@keyframes cmp-up { from { transform: translateY(100%); } }

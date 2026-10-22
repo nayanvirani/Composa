@@ -1,0 +1,47 @@
+{%- comment -%}
+  Product page block: places the Customize button exactly where the merchant wants it.
+  When present, the app embed's automatic button is skipped.
+{%- endcomment -%}
+{%- assign p = block.settings.product | default: product -%}
+{%- if p -%}
+  {%- capture composa_key -%}{%- render 'composa-resolve', resolve_product: p -%}{%- endcapture -%}{%- assign composa_key = composa_key | strip -%}
+  {%- if composa_key != '' -%}
+    {%- assign composa_config = shop.metafields.composa[composa_key].value -%}
+    {%- if composa_config != blank -%}
+      {%- assign label = block.settings.label | default: composa_config.display.button.label | default: 'Customize' -%}
+      <div class="composa-block" {{ block.shopify_attributes }}>
+        {%- if p.id != product.id -%}
+          <script type="application/json" id="composa-product-{{ block.id }}">{{ p | json }}</script>
+          <script type="application/json" data-composa-config="{{ composa_key }}">{{ composa_config | json }}</script>
+        {%- endif -%}
+        <button
+          type="button"
+          class="button {% if block.settings.style == 'primary' %}button--primary{% else %}button--secondary{% endif %} composa-button"
+          style="width: 100%"
+          data-composa-open
+          data-configurator-key="{{ composa_key }}"
+          {% if p.id != product.id %}data-product-json="composa-product-{{ block.id }}" data-variant-id="{{ p.selected_or_first_available_variant.id }}"{% endif %}
+          {% if block.settings.replace_add_to_cart %}data-replace-atc="true"{% endif %}
+        >{{ label | escape }}</button>
+        {%- if block.settings.show_from_price and composa_config.display.steps.from_price != false -%}
+          <p class="composa-from">{{ 'composa.from' | t: price: p.price | money }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:block.name",
+  "target": "section",
+  "enabled_on": { "templates": ["product", "index", "page"] },
+  "settings": [
+    { "type": "product", "id": "product", "label": "t:block.product", "info": "t:block.product_info" },
+    { "type": "text", "id": "label", "label": "t:block.label" },
+    { "type": "select", "id": "style", "label": "t:block.style", "default": "primary", "options": [ { "value": "primary", "label": "t:block.primary" }, { "value": "secondary", "label": "t:block.secondary" } ] },
+    { "type": "checkbox", "id": "replace_add_to_cart", "label": "t:block.replace_add_to_cart", "default": true },
+    { "type": "checkbox", "id": "show_from_price", "label": "t:block.show_from_price", "default": true }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,25 @@
+query CartLinesDiscountsGenerateRunInput {
+  presentmentCurrencyRate
+  cart {
+    lines {
+      id
+      quantity
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+      configId: attribute(key: "_config_id") { value }
+      price: attribute(key: "_price") { value }
+      base: attribute(key: "_base") { value }
+      currency: attribute(key: "_cur") { value }
+      signature: attribute(key: "_sig") { value }
+    }
+  }
+  discount {
+    discountClasses
+    metafield(namespace: "$app:composa", key: "config") {
+      jsonValue
+    }
+  }
+}
