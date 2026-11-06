@@ -21,7 +21,7 @@ class SubscriptionsRelationManager extends RelationManager
         return $table->defaultSort('created_at', 'desc')->columns([
             TextColumn::make('name'),
             TextColumn::make('status')->badge(),
-            TextColumn::make('price_cents')->label('Price')->formatStateUsing(fn ($state, $r) => number_format($state / 100, 2).' '.$r->currency),
+            TextColumn::make('price_cents')->label('Price')->formatStateUsing(fn ($state, $record) => number_format($state / 100, 2).' '.$record->currency),
             TextColumn::make('trial_ends_at')->dateTime()->placeholder('—'),
             TextColumn::make('current_period_end')->dateTime()->placeholder('—'),
             TextColumn::make('created_at')->since(),

@@ -94,7 +94,7 @@ class SystemEventResource extends Resource
                 TextColumn::make('assignee.name')->label('Owner')->placeholder('—'),
             ])
             ->filters([
-                TernaryFilter::make('open')->label('Open only')->default(true)->queries(true: fn ($q) => $q->whereNull('resolved_at'), false: fn ($q) => $q->whereNotNull('resolved_at')),
+                TernaryFilter::make('open')->label('Open only')->default(true)->queries(true: fn ($query) => $query->whereNull('resolved_at'), false: fn ($query) => $query->whereNotNull('resolved_at')),
                 SelectFilter::make('severity')->options(['critical' => 'Critical', 'warning' => 'Warning', 'info' => 'Info']),
                 SelectFilter::make('type')->options(fn () => SystemEvent::query()->distinct()->pluck('type', 'type')->all()),
             ])

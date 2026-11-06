@@ -86,7 +86,7 @@ class SupportTicketResource extends Resource
     {
         return $table
             ->defaultSort('last_reply_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with(['shop.plan', 'assignee']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['shop.plan', 'assignee']))
             ->columns([
                 TextColumn::make('subject')->searchable()->limit(60)->description(fn (SupportTicket $t) => $t->shop?->domain ?? $t->requester_email),
                 Fields::statusColumn(),
@@ -102,7 +102,7 @@ class SupportTicketResource extends Resource
                 SelectFilter::make('status')->options(['open' => 'Open', 'pending' => 'Waiting on merchant', 'closed' => 'Closed'])->default('open'),
                 SelectFilter::make('priority')->options(['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'urgent' => 'Urgent']),
                 SelectFilter::make('source')->options(['app' => 'App', 'website' => 'Website', 'email' => 'Email']),
-                TernaryFilter::make('mine')->label('Assigned to me')->queries(true: fn ($q) => $q->where('assigned_to', auth()->id()), false: fn ($q) => $q->whereNull('assigned_to')),
+                TernaryFilter::make('mine')->label('Assigned to me')->queries(true: fn ($query) => $query->where('assigned_to', auth()->id()), false: fn ($query) => $query->whereNull('assigned_to')),
             ])
             ->recordActions([ViewAction::make()])
             ->toolbarActions([

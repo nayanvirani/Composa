@@ -14,7 +14,7 @@ class ConfiguratorsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table->defaultSort('updated_at', 'desc')->columns([
-            TextColumn::make('name')->description(fn ($r) => $r->handle),
+            TextColumn::make('name')->description(fn ($record) => $record->handle),
             Fields::statusColumn(),
             TextColumn::make('template_key')->label('Template')->color('gray'),
             TextColumn::make('display_mode')->badge()->color('gray'),
