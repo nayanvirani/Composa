@@ -49,6 +49,11 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
+@if (! empty($sitePreview))
+<div class="notice" role="region" aria-label="Preview" style="background: #121212; color: #FFFFFF">
+    <div class="wrap"><span class="mono" style="font-size: 12px">STAFF PREVIEW — visitors still see the coming-soon page.</span><a href="?preview=off" style="color: #FF6A2A; font-weight: 600">Exit preview →</a></div>
+</div>
+@endif
 @if ($announcement)
 <div class="notice" role="region" aria-label="Announcement">
     <div class="wrap">

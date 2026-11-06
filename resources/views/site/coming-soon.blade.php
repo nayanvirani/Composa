@@ -2,6 +2,9 @@
 @extends('site.layout', ['minimal' => true, 'sheetNo' => '00', 'title' => 'Coming soon', 'seo' => ['robots' => 'noindex']])
 
 @section('content')
+    @if (! empty($canPreview))
+        <div class="notice" style="background: #121212; color: #FFFFFF"><div class="wrap"><span class="mono" style="font-size: 12px">You’re signed in as staff. This is what visitors see.</span><a href="?preview=full" style="color: #FF6A2A; font-weight: 600">Preview the full site →</a></div></div>
+    @endif
     <section class="sec paper" style="padding: 72px 0 96px">
         <div class="wrap nf" style="align-items: start">
             <div class="stack" style="gap: 24px">

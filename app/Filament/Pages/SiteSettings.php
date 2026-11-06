@@ -45,7 +45,7 @@ class SiteSettings extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
-            Section::make('Launch')->description('Until the app is listed on the Shopify App Store, visitors see a coming-soon page. Legal pages, the status page and signup forms stay public; signed-in staff see the full site.')->columns(2)->schema([
+            Section::make('Launch')->description('Until the app is listed on the Shopify App Store, visitors see a coming-soon page. Legal pages, the status page and signup forms stay public. Staff see the coming-soon page too, with a link to preview the full site.')->columns(2)->schema([
                 Toggle::make('launch.coming_soon')->label('Show the coming-soon page')->columnSpanFull(),
                 TextInput::make('launch.title')->label('Headline')->helperText('Wrap words in *asterisks* for the orange italic accent.')->columnSpanFull(),
                 Textarea::make('launch.intro')->label('Intro')->rows(3)->columnSpanFull(),
