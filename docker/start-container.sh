@@ -7,6 +7,7 @@ php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 php artisan filament:optimize || true
+php artisan storage:link --force >/dev/null 2>&1 || true
 
 case "${ROLE:-web}" in
   worker)
