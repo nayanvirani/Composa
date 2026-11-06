@@ -18,12 +18,12 @@ final class TemplateMeta
         };
         foreach ($definition['steps'] ?? [] as $step) {
             foreach ($step['fields'] ?? [] as $field) {
-                $collect($field['price'] ?? null);
+                $collect($field['price_rule'] ?? $field['price'] ?? null);
                 if (! empty($field['variant_option'])) {
                     $found['variant'] = true;
                 }
                 foreach ($field['options'] ?? [] as $o) {
-                    $collect($o['price'] ?? null);
+                    $collect($o['price_rule'] ?? $o['price'] ?? null);
                     if (! empty($o['linked_variant_id'])) {
                         $found['linked'] = true;
                     }

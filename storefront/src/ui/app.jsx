@@ -118,7 +118,7 @@ function Configurator({ opts, onClose }) {
   };
 
   const priceOf = (field, option) => {
-    const rule = option ? option.price : field.price;
+    const rule = option ? option.price_rule : field.price_rule;
     if (!rule || !rule.type) return '';
     if (rule.type === 'fixed') return Number(rule.amount) ? (Number(rule.amount) > 0 ? '+' : '') + money(Math.round(Number(rule.amount) * 100)) : '';
     if (rule.type === 'percent') return Number(rule.percent) ? '+' + rule.percent + '%' : '';
