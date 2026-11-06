@@ -110,14 +110,14 @@ class ShopResource extends Resource
     {
         return $table
             ->defaultSort('installed_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $q) => $q->with('plan')->withCount(['configurators as published_count' => fn ($c) => $c->where('status', 'published')]))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('plan'))
             ->columns([
                 TextColumn::make('name')->searchable()->description(fn (Shop $s) => $s->domain)->sortable(),
                 TextColumn::make('plan.name')->badge()->placeholder('None'),
                 Fields::statusColumn(),
                 TextColumn::make('shopify_plan')->color('gray')->toggleable(),
                 IconColumn::make('is_plus')->label('Plus')->boolean()->toggleable(),
-                TextColumn::make('published_count')->label('Live configurators')->alignEnd(),
+                TextColumn::make('configurators_count')->counts(['configurators' => fn (Builder $query) => $query->where('status', 'published')])->label('Live configurators')->alignEnd(),
                 TextColumn::make('cart_mode')->badge()->color('gray')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('installed_at')->since()->sortable(),
             ])
