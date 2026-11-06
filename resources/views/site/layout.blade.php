@@ -12,6 +12,7 @@
 
     // Sheet numbers follow the design: every page is one sheet of the product drawing set.
     $sheets = ['/' => '01', '/templates' => '02', '/pricing' => '03', '/docs' => '04', '/journal' => '05', '/features' => '06', '/changelog' => '07', '/about' => '08', '/contact' => '09', '/early-access' => '10', '/legal' => '11', '/status' => '12'];
+    $minimal = $minimal ?? false;
     $sheet = $sheetNo ?? collect($sheets)->first(fn ($n, $url) => $isCurrent($url)) ?? '—';
 
     $header = $menus['header'] ?? [['label' => 'Product', 'url' => '/'], ['label' => 'Templates', 'url' => '/templates'], ['label' => 'Pricing', 'url' => '/pricing'], ['label' => 'Docs', 'url' => '/docs'], ['label' => 'Journal', 'url' => '/journal']];
@@ -61,7 +62,7 @@
     <div class="hd-strip">
         <div class="wrap">
             <span>Sheet {{ $sheet }} / 12<span class="strip-long"> — {{ $brand['name'] }} · {{ $site['brand']['strip'] ?? 'product configurator for Shopify' }}</span></span>
-            <a href="{{ SiteText::url($site['links']['strip_url'] ?? '/early-access') }}">{{ $site['links']['strip_label'] ?? 'Beta open → apply' }}</a>
+            @unless ($minimal)<a href="{{ SiteText::url($site['links']['strip_url'] ?? '/early-access') }}">{{ $site['links']['strip_label'] ?? 'Beta open → apply' }}</a>@endunless
         </div>
     </div>
     <div class="wrap hd-row">
@@ -73,6 +74,7 @@
             @endif
             <span>{{ $brand['name'] }}</span>
         </a>
+        @unless ($minimal)
         <nav aria-label="Main" class="nav-d">
             @foreach ($header as $i => $item)
                 <a href="{{ SiteText::url($item['url']) }}" @if ($isCurrent($item['url'])) aria-current="page" @endif @if (! empty($item['new_tab'])) target="_blank" rel="noopener" @endif><span class="n">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>{{ $item['label'] }}</a>
@@ -86,7 +88,9 @@
                 <svg class="i-close" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" stroke="#121212" stroke-width="1.6"></path></svg>
             </button>
         </div>
+        @endunless
     </div>
+    @unless ($minimal)
     <nav id="nav-m" class="nav-m paper" aria-label="Mobile menu">
         @foreach ($mobile as $item)
             @php $n = $sheets[rtrim($item['url'], '/') ?: '/'] ?? str_pad($loop->iteration, 2, '0', STR_PAD_LEFT); @endphp
@@ -97,6 +101,7 @@
             <a href="{{ $install }}">Install on Shopify →</a>
         </div>
     </nav>
+    @endunless
 </header>
 
 <main id="main">
@@ -107,7 +112,7 @@
     <div class="wrap">
         <div class="wm" aria-hidden="true">{{ $brand['name'] }}<span>.</span></div>
         <div class="tblock">
-            <div style="grid-column: span 2">
+            <div class="{{ $minimal ? 'span5' : 'span2' }}">
                 <span class="k">Drawn for</span>
                 <span style="font-size: 15px; line-height: 1.5">{{ $site['footer']['drawn_for'] ?? 'Made-to-order and customizable products on any Shopify store — jewelry, furniture, print, apparel, gifts, B2B.' }}</span>
                 @if (session('form_sent') === 'newsletter')
@@ -123,7 +128,7 @@
                     </form>
                 @endif
             </div>
-            @foreach ($footerCols as $key => $label)
+            @foreach ($minimal ? ['footer_legal' => 'Legal'] : $footerCols as $key => $label)
                 <div>
                     <span class="k">{{ $label }}</span>
                     @foreach ($menus[$key] ?? [] as $item)

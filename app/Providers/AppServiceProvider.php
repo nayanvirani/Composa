@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['site.layout', 'site.page', 'site.legal', 'site.docs', 'site.doc', 'site.journal', 'site.post', 'site.404'], SiteComposer::class);
+        View::composer(['site.layout', 'site.page', 'site.legal', 'site.docs', 'site.doc', 'site.journal', 'site.post', 'site.404', 'site.coming-soon'], SiteComposer::class);
 
         NavigationMenu::saved(fn () => Cache::forget('site_menus'));
         NavigationMenu::deleted(fn () => Cache::forget('site_menus'));

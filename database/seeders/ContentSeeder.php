@@ -40,6 +40,13 @@ class ContentSeeder extends Seeder
     private function settings(): void
     {
         $defaults = [
+            'launch' => [
+                'coming_soon' => true,
+                'title' => 'Something made-to-order is *on the drawing board.*',
+                'intro' => 'Composa is a product configurator for Shopify: shoppers build custom products step by step, you get one cart line, a signed price and a spec your workshop can read. We’re finishing the last sheets before the Shopify App Store listing.',
+                'badge' => 'LAUNCHING ON THE SHOPIFY APP STORE',
+                'date_label' => 'Soon',
+            ],
             'brand' => ['name' => 'Composa', 'tagline' => 'Step-by-step product configurators for Shopify, priced to the cent.', 'strip' => 'product configurator for Shopify'],
             'contact' => ['support_email' => 'support@composa.app', 'sales_email' => 'hello@composa.app', 'privacy_email' => 'privacy@composa.app', 'response_time' => 'Replies within one business day'],
             'links' => ['app_store' => 'https://apps.shopify.com/composa', 'install' => 'https://apps.shopify.com/composa', 'login' => 'https://admin.shopify.com', 'status' => '/status', 'strip_label' => 'Beta open → apply', 'strip_url' => '/early-access'],

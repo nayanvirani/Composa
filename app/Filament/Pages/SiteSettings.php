@@ -28,7 +28,7 @@ class SiteSettings extends Page
 
     protected string $view = 'filament.pages.site-settings';
 
-    public const KEYS = ['brand', 'contact', 'links', 'seo', 'analytics', 'company', 'footer'];
+    public const KEYS = ['launch', 'brand', 'contact', 'links', 'seo', 'analytics', 'company', 'footer'];
 
     public ?array $data = [];
 
@@ -45,6 +45,13 @@ class SiteSettings extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
+            Section::make('Launch')->description('Until the app is listed on the Shopify App Store, visitors see a coming-soon page. Legal pages, the status page and signup forms stay public; signed-in staff see the full site.')->columns(2)->schema([
+                Toggle::make('launch.coming_soon')->label('Show the coming-soon page')->columnSpanFull(),
+                TextInput::make('launch.title')->label('Headline')->helperText('Wrap words in *asterisks* for the orange italic accent.')->columnSpanFull(),
+                Textarea::make('launch.intro')->label('Intro')->rows(3)->columnSpanFull(),
+                TextInput::make('launch.badge')->label('Badge')->placeholder('LAUNCHING ON THE SHOPIFY APP STORE'),
+                TextInput::make('launch.date_label')->label('Launch date label')->placeholder('Q1 2027'),
+            ]),
             Section::make('Brand')->columns(2)->schema([
                 TextInput::make('brand.name')->default('Composa')->required(),
                 TextInput::make('brand.tagline'),
