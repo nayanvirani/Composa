@@ -6,8 +6,18 @@
     $metaDescription = ($seo['description'] ?? null) ?: ($description ?? null) ?: ($site['seo']['description'] ?? null);
     $metaImage = ($seo['image'] ?? null) ?: ($site['seo']['image'] ?? null);
     $install = $site['links']['install'];
-    $header = $menus['header'] ?? [['label' => 'Features', 'url' => '/features'], ['label' => 'Templates', 'url' => '/templates'], ['label' => 'Pricing', 'url' => '/pricing'], ['label' => 'Docs', 'url' => '/docs'], ['label' => 'Journal', 'url' => '/journal']];
-    $path = '/'.ltrim(request()->path(), '/');
+    $path = '/'.trim(request()->path(), '/');
+    $path = $path === '/' ? '/' : rtrim($path, '/');
+    $isCurrent = fn (string $url) => $url === '/' ? $path === '/' : ($path === rtrim($url, '/') || str_starts_with($path, rtrim($url, '/').'/'));
+
+    // Sheet numbers follow the design: every page is one sheet of the product drawing set.
+    $sheets = ['/' => '01', '/templates' => '02', '/pricing' => '03', '/docs' => '04', '/journal' => '05', '/features' => '06', '/changelog' => '07', '/about' => '08', '/contact' => '09', '/early-access' => '10', '/legal' => '11', '/status' => '12'];
+    $sheet = $sheetNo ?? collect($sheets)->first(fn ($n, $url) => $isCurrent($url)) ?? '—';
+
+    $header = $menus['header'] ?? [['label' => 'Product', 'url' => '/'], ['label' => 'Templates', 'url' => '/templates'], ['label' => 'Pricing', 'url' => '/pricing'], ['label' => 'Docs', 'url' => '/docs'], ['label' => 'Journal', 'url' => '/journal']];
+    $mobile = collect($header)->concat($menus['footer_product'] ?? [])->concat($menus['footer_company'] ?? [])->unique('url')->values();
+    $footerCols = ['footer_product' => 'Product', 'footer_resources' => 'Resources', 'footer_company' => 'Company', 'footer_legal' => 'Legal'];
+    $meta = $site['footer']['meta'] ?? [['k' => 'Rev', 'v' => now()->format('Y.m')], ['k' => 'Status', 'v' => 'Beta'], ['k' => 'Scale', 'v' => 'Any product'], ['k' => 'Locale', 'v' => 'English · USD'], ['k' => 'Built on', 'v' => 'Shopify'], ['k' => '©', 'v' => ($site['company']['legal_name'] ?? $brand['name']).' '.date('Y')]];
 @endphp
 <!doctype html>
 <html lang="{{ $locale ?? 'en' }}">
@@ -24,8 +34,9 @@
 @if (! empty($brand['favicon_url']))<link rel="icon" href="{{ $brand['favicon_url'] }}">@endif
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 @vite(['resources/css/site.css'])
+<script>document.documentElement.classList.add('js')</script>
 @if (! empty($site['analytics']['plausible_domain']))
 <script defer data-domain="{{ $site['analytics']['plausible_domain'] }}" src="https://plausible.io/js/script.js"></script>
 @endif
@@ -41,72 +52,98 @@
 <div class="notice" role="region" aria-label="Announcement">
     <div class="wrap">
         <span>{{ $announcement->message }}</span>
-        @if ($announcement->link_url)<a href="{{ SiteText::url($announcement->link_url) }}">{{ $announcement->link_label ?: 'Read more' }} →</a>@endif
+        @if ($announcement->link_url)<a href="{{ SiteText::url($announcement->link_url) }}" style="font-weight:600">{{ $announcement->link_label ?: 'Read more' }} →</a>@endif
     </div>
 </div>
 @endif
 
-<header class="site-head">
-    <div class="wrap">
-        <a class="brand" href="/" aria-label="{{ $brand['name'] }} home">
+<header class="hd">
+    <div class="hd-strip">
+        <div class="wrap">
+            <span>Sheet {{ $sheet }} / 12<span class="strip-long"> — {{ $brand['name'] }} · {{ $site['brand']['strip'] ?? 'product configurator for Shopify' }}</span></span>
+            <a href="{{ SiteText::url($site['links']['strip_url'] ?? '/early-access') }}">{{ $site['links']['strip_label'] ?? 'Beta open → apply' }}</a>
+        </div>
+    </div>
+    <div class="wrap hd-row">
+        <a href="/" class="logo" aria-label="{{ $brand['name'] }} home">
             @if (! empty($brand['logo_url']))
                 <img src="{{ $brand['logo_url'] }}" alt="">
             @else
-                <span class="brand-mark" aria-hidden="true">C</span>
+                <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" fill="#FF4F00"></rect><path d="M6 24 A18 18 0 0 1 24 6 L24 24 Z" fill="#121212"></path></svg>
             @endif
             <span>{{ $brand['name'] }}</span>
         </a>
-        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu" onclick="var n=document.getElementById('site-nav');var o=n.classList.toggle('is-open');this.setAttribute('aria-expanded',o)"><span></span><span></span><span></span></button>
-        <nav class="nav" id="site-nav" aria-label="Main">
-            @foreach ($header as $item)
-                <a href="{{ SiteText::url($item['url']) }}" @if ($path === $item['url'] || ($item['url'] !== '/' && str_starts_with($path, rtrim($item['url'], '/').'/'))) aria-current="page" @endif @if (! empty($item['new_tab'])) target="_blank" rel="noopener" @endif>{{ $item['label'] }}</a>
+        <nav aria-label="Main" class="nav-d">
+            @foreach ($header as $i => $item)
+                <a href="{{ SiteText::url($item['url']) }}" @if ($isCurrent($item['url'])) aria-current="page" @endif @if (! empty($item['new_tab'])) target="_blank" rel="noopener" @endif><span class="n">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>{{ $item['label'] }}</a>
             @endforeach
-            <a class="btn" href="{{ $install }}">Install on Shopify</a>
         </nav>
+        <div class="hd-actions">
+            <a href="{{ $site['links']['login'] ?? 'https://admin.shopify.com' }}" class="login" rel="noopener">Log in</a>
+            <a href="{{ $install }}" class="install">Install <span>→</span></a>
+            <button type="button" class="menu-btn" aria-expanded="false" aria-controls="nav-m" aria-label="Open menu" data-menu>
+                <svg class="i-open" width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><path d="M0 1h18M0 7h18M0 13h18" stroke="#121212" stroke-width="1.6"></path></svg>
+                <svg class="i-close" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" stroke="#121212" stroke-width="1.6"></path></svg>
+            </button>
+        </div>
     </div>
+    <nav id="nav-m" class="nav-m paper" aria-label="Mobile menu">
+        @foreach ($mobile as $item)
+            @php $n = $sheets[rtrim($item['url'], '/') ?: '/'] ?? str_pad($loop->iteration, 2, '0', STR_PAD_LEFT); @endphp
+            <a class="ml" href="{{ SiteText::url($item['url']) }}" @if ($isCurrent($item['url'])) aria-current="page" @endif><span class="n">{{ $n }}</span><span class="t">{{ $item['label'] }}</span></a>
+        @endforeach
+        <div class="m-cta">
+            <a href="{{ $site['links']['login'] ?? 'https://admin.shopify.com' }}">Log in</a>
+            <a href="{{ $install }}">Install on Shopify →</a>
+        </div>
+    </nav>
 </header>
 
 <main id="main">
     @yield('content')
 </main>
 
-<footer class="site-foot">
+<footer class="ft">
     <div class="wrap">
-        <div class="foot-grid">
-            <div>
-                <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">C</span><span>{{ $brand['name'] }}</span></a>
-                <p class="muted" style="margin-top:14px;max-width:34ch">{{ $brand['tagline'] ?? 'Step-by-step product configurators for Shopify, priced to the cent.' }}</p>
+        <div class="wm" aria-hidden="true">{{ $brand['name'] }}<span>.</span></div>
+        <div class="tblock">
+            <div style="grid-column: span 2">
+                <span class="k">Drawn for</span>
+                <span style="font-size: 15px; line-height: 1.5">{{ $site['footer']['drawn_for'] ?? 'Made-to-order and customizable products on any Shopify store — jewelry, furniture, print, apparel, gifts, B2B.' }}</span>
                 @if (session('form_sent') === 'newsletter')
-                    <p class="sent" style="margin-top:16px;padding:12px">You’re subscribed.</p>
+                    <span class="tag-o" role="status" style="margin-top: 6px">SUBSCRIBED · THANK YOU</span>
                 @else
-                    <form class="newsletter" method="post" action="{{ route('site.forms.newsletter') }}">
+                    <form class="nl" method="post" action="{{ route('site.forms.newsletter') }}">
                         @csrf
                         <input type="hidden" name="source" value="footer">
                         <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-                        <label class="hp" for="nl-email">Email</label>
-                        <input id="nl-email" type="email" name="email" placeholder="Email for product updates" required>
+                        <label for="nl-email" class="sr">Email for product updates</label>
+                        <input id="nl-email" type="email" name="email" placeholder="Updates by email" required>
                         <button type="submit">Subscribe</button>
                     </form>
                 @endif
             </div>
-            @foreach (['footer_product' => 'Product', 'footer_resources' => 'Resources', 'footer_company' => 'Company', 'footer_legal' => 'Legal'] as $key => $label)
-                @if (! empty($menus[$key]))
-                    <div>
-                        <div class="label">{{ $label }}</div>
-                        <ul>
-                            @foreach ($menus[$key] as $item)
-                                <li><a href="{{ SiteText::url($item['url']) }}" @if (! empty($item['new_tab'])) target="_blank" rel="noopener" @endif>{{ $item['label'] }}</a></li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+            @foreach ($footerCols as $key => $label)
+                <div>
+                    <span class="k">{{ $label }}</span>
+                    @foreach ($menus[$key] ?? [] as $item)
+                        <a class="fa" href="{{ SiteText::url($item['url']) }}" @if (! empty($item['new_tab'])) target="_blank" rel="noopener" @endif>{{ $item['label'] }}</a>
+                    @endforeach
+                </div>
+            @endforeach
+            @foreach ($meta as $m)
+                <div class="meta"><span class="k">{{ $m['k'] }}</span><span class="v">{{ $m['v'] }}</span></div>
             @endforeach
         </div>
-        <div class="foot-base">
-            <span>© {{ date('Y') }} {{ $site['company']['legal_name'] ?? $brand['name'] }}. {{ $site['footer']['note'] ?? 'Composa is not affiliated with Shopify Inc.' }}</span>
-            <span class="mono">Billed through Shopify</span>
-        </div>
+        @if (! empty($site['footer']['note']))<p class="k" style="margin:0">{{ $site['footer']['note'] }}</p>@endif
     </div>
 </footer>
+<script>
+(function () {
+  var b = document.querySelector('[data-menu]'), m = document.getElementById('nav-m');
+  if (b && m) b.addEventListener('click', function () { var o = m.classList.toggle('is-open'); b.setAttribute('aria-expanded', o); b.setAttribute('aria-label', o ? 'Close menu' : 'Open menu'); });
+})();
+</script>
+@stack('scripts')
 </body>
 </html>

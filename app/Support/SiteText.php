@@ -39,6 +39,33 @@ final class SiteText
         return new HtmlString($html);
     }
 
+    /**
+     * A legal document as clauses: each "## Heading" starts one. A first "> ..." line inside a
+     * clause is its plain-words summary, shown beside the legal text.
+     *
+     * @return list<array{id:string,title:string,html:HtmlString,plain:?string}>
+     */
+    public static function clauses(?string $markdown): array
+    {
+        $parts = preg_split('/^##\s+/m', (string) $markdown);
+        $intro = trim(array_shift($parts));
+        $out = [];
+        foreach ($parts as $part) {
+            [$title, $body] = array_pad(explode("\n", $part, 2), 2, '');
+            $plain = null;
+            if (preg_match('/^>\s?(.+)$/m', $body, $m)) {
+                $plain = trim($m[1]);
+                $body = preg_replace('/^>\s?.+$/m', '', $body, 1);
+            }
+            $out[] = ['id' => Str::slug($title), 'title' => trim($title), 'html' => self::markdown(trim($body)), 'plain' => $plain];
+        }
+        if ($intro !== '' && $out === []) {
+            $out[] = ['id' => 'document', 'title' => 'Document', 'html' => self::markdown($intro), 'plain' => null];
+        }
+
+        return $out;
+    }
+
     public static function url(?string $url): string
     {
         $url = (string) $url;

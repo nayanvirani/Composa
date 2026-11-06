@@ -1,24 +1,38 @@
-@extends('site.layout', ['title' => $post->title, 'description' => $post->excerpt, 'seo' => ($post->seo ?? []) + ['image' => $post->cover_image]])
+@php
+    use App\Support\SiteText;
+    $no = 'J-'.str_pad($post->journal_no, 2, '0', STR_PAD_LEFT);
+@endphp
+@extends('site.layout', ['title' => $post->title, 'description' => $post->excerpt, 'seo' => ($post->seo ?? []) + ['image' => $post->cover_image], 'sheetNo' => '05'])
 
 @section('content')
-    <article>
-        <div class="page-head"><div class="wrap">
-            <div class="crumbs"><a href="{{ route('site.journal') }}">Journal</a> / {{ $post->tag ?? 'Post' }}</div>
-            <h1>{{ $post->title }}</h1>
-            @if ($post->excerpt)<p>{{ $post->excerpt }}</p>@endif
-            <p class="label" style="margin-top:20px">{{ $post->author }} · {{ $post->published_at?->format('F j, Y') }} · {{ $post->read_minutes }} min read</p>
-        </div></div>
-        @if ($post->cover_image)
-            <div class="wrap" style="padding-top:40px"><img src="{{ $post->cover_image }}" alt="" style="width:100%;border:1px solid var(--line)"></div>
-        @endif
-        <div class="wrap" style="padding-top:48px;padding-bottom:72px">
-            <div class="prose" style="margin:0 auto">{{ \App\Support\SiteText::document($post->body) }}</div>
+    <header class="sec" style="padding: 56px 0 40px">
+        <div class="wrap stack" style="gap: 20px; align-items: center; text-align: center">
+            <div class="k"><a href="{{ route('site.journal') }}" style="color: #5C5C57">Journal</a> / {{ $no }} · {{ $post->tag ?? 'Post' }}</div>
+            <h1 class="serif h-xl" style="max-width: 11em">{{ SiteText::inline($post->title) }}</h1>
+            <div class="mono" style="font-size: 12px; color: #5C5C57">{{ strtoupper($post->author) }} · {{ strtoupper($post->published_at?->format('M j, Y')) }} · {{ $post->read_minutes }} MIN READ</div>
         </div>
+    </header>
+    @if ($post->cover_image)
+        <figure class="sec paper" style="margin: 0; padding: 48px 0; display: flex; flex-direction: column; align-items: center; gap: 12px">
+            <img src="{{ $post->cover_image }}" alt="" style="max-width: min(92%, 960px); border: 1px solid #121212">
+            <figcaption class="mono" style="font-size: 11px; color: #5C5C57">FIG. {{ $no }}</figcaption>
+        </figure>
+    @endif
+    <article class="wrap post" style="padding-top: 56px; padding-bottom: 72px">
+        <div class="gut"></div>
+        <div class="body">{{ SiteText::document($post->body) }}</div>
+        <aside class="gut"></aside>
     </article>
     @if ($related->isNotEmpty())
-        <section class="sheet" style="border-top:1px solid var(--line)"><div class="wrap sheet-body">
-            <div class="label" style="margin-bottom:24px">Keep reading</div>
-            <div class="posts">@foreach ($related as $r)@include('site.partials.post-card', ['post' => $r])@endforeach</div>
-        </div></section>
+        <section style="padding: 56px 0 72px; border-top: 1px solid #121212">
+            <div class="wrap stack" style="gap: 20px">
+                <div class="k">Related sheets</div>
+                <div class="rel">
+                    @foreach ($related as $r)
+                        <a href="{{ route('site.post', $r->slug) }}"><span class="mono" style="font-size: 12px; color: #C23A00">J-{{ str_pad($r->journal_no, 2, '0', STR_PAD_LEFT) }}</span><span class="serif" style="font-size: 32px; line-height: 1.05">{{ $r->title }}</span><span class="mono" style="margin-top: auto; font-size: 11px; color: #5C5C57">{{ strtoupper($r->tag ?? 'Journal') }} · {{ $r->read_minutes }} MIN</span></a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
     @endif
 @endsection

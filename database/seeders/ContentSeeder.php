@@ -25,6 +25,7 @@ class ContentSeeder extends Seeder
         $this->settings();
         $this->menus();
         $this->pages();
+        $this->retireDpa();
         $this->faqs();
         $this->docs();
         $this->journal();
@@ -39,174 +40,236 @@ class ContentSeeder extends Seeder
     private function settings(): void
     {
         $defaults = [
-            'brand' => ['name' => 'Composa', 'tagline' => 'Step-by-step product configurators for Shopify, priced to the cent.'],
+            'brand' => ['name' => 'Composa', 'tagline' => 'Step-by-step product configurators for Shopify, priced to the cent.', 'strip' => 'product configurator for Shopify'],
             'contact' => ['support_email' => 'support@composa.app', 'sales_email' => 'hello@composa.app', 'privacy_email' => 'privacy@composa.app', 'response_time' => 'Replies within one business day'],
-            'links' => ['app_store' => 'https://apps.shopify.com/composa', 'install' => 'https://apps.shopify.com/composa', 'status' => '/status'],
+            'links' => ['app_store' => 'https://apps.shopify.com/composa', 'install' => 'https://apps.shopify.com/composa', 'login' => 'https://admin.shopify.com', 'status' => '/status', 'strip_label' => 'Beta open → apply', 'strip_url' => '/early-access'],
             'seo' => ['title_suffix' => ' — Composa', 'description' => 'Composa turns any Shopify product into a guided configurator: variants, options, conditional rules and exact pricing, verified at checkout.'],
             'analytics' => ['cookie_banner' => false],
             'company' => ['legal_name' => 'Composa'],
-            'footer' => ['note' => 'Composa is not affiliated with Shopify Inc.'],
+            'footer' => [
+                'drawn_for' => 'Made-to-order and customizable products on any Shopify store — jewelry, furniture, print, apparel, gifts, B2B.',
+                'note' => 'Composa is not affiliated with Shopify Inc.',
+                'meta' => [['k' => 'Rev', 'v' => '2026.11'], ['k' => 'Status', 'v' => 'Beta'], ['k' => 'Scale', 'v' => 'Any product'], ['k' => 'Locale', 'v' => 'English · USD'], ['k' => 'Built on', 'v' => 'Shopify'], ['k' => '©', 'v' => 'Composa']],
+            ],
         ];
+        // Missing keys are added; values set in super admin are kept.
         foreach ($defaults as $key => $value) {
-            SiteSetting::query()->firstOrCreate(['key' => $key], ['value' => $value]);
+            $setting = SiteSetting::query()->firstOrCreate(['key' => $key], ['value' => $value]);
+            $merged = ($setting->value ?? []) + $value;
+            if ($merged != $setting->value) {
+                $setting->forceFill(['value' => $merged])->save();
+            }
         }
     }
 
     private function menus(): void
     {
         $menus = [
-            'header' => ['Header', [['Features', '/features'], ['Templates', '/templates'], ['Pricing', '/pricing'], ['Docs', '/docs'], ['Journal', '/journal']]],
-            'footer_product' => ['Footer · Product', [['Features', '/features'], ['Templates', '/templates'], ['Pricing', '/pricing'], ['Changelog', '/changelog'], ['Early access', '/early-access']]],
-            'footer_resources' => ['Footer · Resources', [['Docs', '/docs'], ['Journal', '/journal'], ['Status', '/status']]],
-            'footer_company' => ['Footer · Company', [['About', '/about'], ['Contact', '/contact']]],
-            'footer_legal' => ['Footer · Legal', [['Privacy policy', '/legal/privacy'], ['Terms of service', '/legal/terms'], ['Data processing', '/legal/dpa']]],
+            'header' => ['Header', [['Product', '/'], ['Templates', '/templates'], ['Pricing', '/pricing'], ['Docs', '/docs'], ['Journal', '/journal']]],
+            'footer_product' => ['Footer · Product', [['Features', '/features'], ['Templates', '/templates'], ['Pricing', '/pricing']]],
+            'footer_resources' => ['Footer · Resources', [['Docs', '/docs'], ['Journal', '/journal'], ['Changelog', '/changelog'], ['Status', '/status']]],
+            'footer_company' => ['Footer · Company', [['About', '/about'], ['Contact', '/contact'], ['Beta program', '/early-access']]],
+            'footer_legal' => ['Footer · Legal', [['Privacy', '/legal/privacy'], ['Terms', '/legal/terms'], ['GDPR', '/legal/gdpr']]],
         ];
         foreach ($menus as $key => [$title, $items]) {
-            NavigationMenu::query()->firstOrCreate(['key' => $key], ['title' => $title, 'items' => array_map(fn ($i) => ['label' => $i[0], 'url' => $i[1]], $items)]);
+            $items = array_map(fn ($i) => ['label' => $i[0], 'url' => $i[1]], $items);
+            $menu = NavigationMenu::query()->firstOrCreate(['key' => $key], ['title' => $title, 'items' => $items]);
+            if ($menu->updated_at->equalTo($menu->created_at) && $menu->items !== $items) {
+                // Keep updated_at = created_at so the menu still counts as untouched next deploy.
+                $menu->timestamps = false;
+                $menu->items = $items;
+                $menu->save();
+            }
         }
     }
 
-    private function page(string $slug, string $title, array $sections, ?string $description = null, string $template = 'sections'): void
+    /** True when nobody on the team has edited the record since it was seeded. */
+    private function untouched(Page $page): bool
     {
-        Page::query()->firstOrCreate(['slug' => $slug, 'locale' => 'en'], [
+        return ! $page->revisions()->whereNotNull('user_id')->exists();
+    }
+
+    protected function page(string $slug, string $title, array $sections, ?string $description = null, string $template = 'sections'): void
+    {
+        $attributes = [
             'title' => $title,
             'template' => $template,
             'status' => 'published',
             'sections' => array_map(fn ($s) => ['type' => $s[0], 'data' => $s[1]], $sections),
             'seo' => $description ? ['description' => $description] : null,
-        ]);
+        ];
+        $page = Page::query()->where('slug', $slug)->where('locale', 'en')->first();
+        if (! $page) {
+            Page::query()->create(['slug' => $slug, 'locale' => 'en'] + $attributes);
+        } elseif ($this->untouched($page) && $page->sections !== $attributes['sections']) {
+            $page->fill($attributes)->save();
+        }
     }
 
-    private function pages(): void
+    /** The DPA now lives in the GDPR document. */
+    private function retireDpa(): void
     {
-        $cta = ['cta', ['title' => 'Your first configurator, *live this afternoon*.', 'body' => 'Free on development stores. 14-day trial on every paid plan, billed through Shopify.', 'button_label' => 'Install on Shopify', 'button_url' => 'https://apps.shopify.com/composa']];
+        $dpa = Page::query()->where('slug', 'legal/dpa')->where('locale', 'en')->first();
+        if ($dpa && $this->untouched($dpa)) {
+            $dpa->delete();
+        }
+    }
+
+    protected function pages(): void
+    {
+        $install = 'https://apps.shopify.com/composa';
 
         $this->page('home', 'Home', [
-            ['hero', [
-                'eyebrow' => 'Product configurator for Shopify',
-                'title' => 'Every option. Every variant. *Priced to the cent.*',
-                'subtitle' => 'Composa turns any product into a guided, step-by-step configurator — built on your existing Shopify variants, with rules, live prices and a checkout that can’t be tampered with.',
-                'primary_label' => 'Install on Shopify', 'primary_url' => 'https://apps.shopify.com/composa',
-                'secondary_label' => 'See the templates', 'secondary_url' => '/templates',
-                'note' => 'Free on development stores · 14-day trial · Billed through Shopify',
+            ['composer', [
+                'title' => "Compose anything.\n*Sell it as one.*",
+                'intro' => 'A product configurator for Shopify. Shoppers build it step by step; you get one cart line, a signed price and a spec your workshop can read.',
+                'primary_label' => 'Install on Shopify', 'primary_url' => $install,
+                'secondary_label' => 'See the patterns', 'secondary_url' => '/templates',
             ]],
-            ['spec_strip', ['items' => [
-                ['value' => '11', 'label' => 'field types, from swatches to file uploads'],
-                ['value' => '7', 'label' => 'ways to price an option'],
-                ['value' => '<20 KB', 'label' => 'storefront script, loaded on first click'],
-                ['value' => '0', 'label' => 'hidden products or variants created'],
-            ]]],
-            ['variant_demo', [
-                'eyebrow' => 'Built on your variants',
-                'title' => 'Already have Color, Size and Carat? *Keep them.*',
-                'intro' => 'Composa reads your product’s options and turns each one into a step. Shoppers pick from your real variants, sold-out combinations are disabled, and the order goes through on the right SKU.',
-                'options' => [['name' => 'Metal', 'values' => '14k Yellow, 18k White, Platinum'], ['name' => 'Size', 'values' => '5, 6, 7, 8, 9'], ['name' => 'Carat', 'values' => '1.0, 1.5, 2.0']],
-            ]],
-            ['features', [
-                'eyebrow' => 'What’s in the box',
-                'title' => 'A configurator builder that thinks like a *product sheet*.',
-                'items' => [
-                    ['code' => 'F-01', 'title' => 'Steps and fields', 'body' => 'Image tiles, swatches, buttons, dropdowns, text with live preview, numbers, dimensions, file uploads and add-on products.'],
-                    ['code' => 'F-02', 'title' => 'Conditional rules', 'body' => 'Show, hide, require or disable options based on earlier answers, quantity or the shopper’s country.'],
-                    ['code' => 'F-03', 'title' => 'Exact pricing', 'body' => 'Fixed and percentage add-ons, per character, per unit or area, quantity tiers, price tables and formulas.'],
-                    ['code' => 'F-04', 'title' => 'Signed checkout', 'body' => 'The server signs every price and a Shopify Cart Transform checks it. Edited carts fall back to the normal price.'],
-                    ['code' => 'F-05', 'title' => 'Layered preview', 'body' => 'Stack images per choice and render engraving text on the product — the composite becomes the cart image.'],
-                    ['code' => 'F-06', 'title' => 'Production ready', 'body' => 'Every order carries a readable spec, a production PDF and the shopper’s uploaded files.'],
+            ['ledger', [
+                'before_label' => '§1 Without Composa', 'after_label' => '§2 With Composa',
+                'before' => [['text' => 'Hitting Shopify’s variant limits on every custom product'], ['text' => 'Fee products cluttering the cart, catalog and reports'], ['text' => 'Workshops decoding cart notes to find out what to make']],
+                'after' => [
+                    ['title' => 'Deep step flows.', 'text' => 'Nested and repeatable steps, conditional rules, any input type.'],
+                    ['title' => 'One clean cart line.', 'text' => 'Cart Transform prices it exactly. Nothing hidden in your store.'],
+                    ['title' => 'A spec on every order.', 'text' => 'Summary, configured image and a production PDF.'],
                 ],
             ]],
-            ['steps', [
-                'eyebrow' => 'How it works',
-                'title' => 'From install to live in *four steps*.',
+            ['routing', [
+                'title' => 'From template to *first order* in four moves.', 'meta' => 'ROUTING SHEET · TARGET < 30 MIN', 'anchor' => 'how',
                 'items' => [
-                    ['title' => 'Pick a template', 'body' => 'Start from a ring builder, apparel, furniture, print or a blank sheet.'],
-                    ['title' => 'Map your variants', 'body' => 'Choose which Shopify options become steps and how each one looks.'],
-                    ['title' => 'Add rules and prices', 'body' => 'Preview every combination with the same engine the storefront runs.'],
-                    ['title' => 'Assign and publish', 'body' => 'Attach it to products, collections or tags and turn on the app embed.'],
+                    ['title' => 'Pick a pattern', 'body' => 'Ring, necklace, furniture, apparel, print, gift box — or blank.'],
+                    ['title' => 'Compose the steps', 'body' => 'Map Shopify variants, add custom fields, rules and prices.'],
+                    ['title' => 'Assign & switch on', 'body' => 'Products, collections, tags or vendors. One-click app embed.'],
+                    ['title' => 'Sell & produce', 'body' => 'One cart line at checkout. Spec, PDF and analytics after.'],
                 ],
             ]],
-            ['templates', ['eyebrow' => 'Templates', 'title' => 'Start from a *proven* layout.', 'count' => 6]],
-            ['faq', ['eyebrow' => 'Questions', 'title' => 'Before you install', 'placement' => 'home']],
-            $cta,
+            ['bom', [
+                'title' => 'Bill of materials', 'intro' => 'Every part that ships with Composa, and the plan it starts on.',
+                'rows' => [
+                    ['no' => 'C-01', 'component' => 'Step builder', 'body' => 'Drag steps and options; nest sub-flows; repeat “add another item”.', 'plan' => 'Free'],
+                    ['no' => 'C-02', 'component' => 'Shopify variant mapping', 'body' => 'Use existing options like Color, Size or Carat as steps — exact variant and stock go to cart.', 'plan' => 'Free'],
+                    ['no' => 'C-03', 'component' => '11 input types', 'body' => 'Swatches, image tiles, buttons, dropdown, text, number, dimensions, file upload, product picker…', 'plan' => 'Free'],
+                    ['no' => 'C-04', 'component' => 'Visual rules', 'body' => 'IF/THEN show, hide, disable, require, set default, set price. Nested on Growth.', 'plan' => 'Free'],
+                    ['no' => 'C-05', 'component' => 'Pricing engine', 'body' => 'Fixed, %, per character, per unit, tiered, lookup table, formula.', 'plan' => 'Free → Pro'],
+                    ['no' => 'C-06', 'component' => 'Layered live preview', 'body' => 'Images swap per choice; text overlays for engraving and print.', 'plan' => 'Free'],
+                    ['no' => 'C-07', 'component' => 'One-line checkout', 'body' => 'Signed price, configured title and image; no hidden products.', 'plan' => 'Free'],
+                    ['no' => 'C-08', 'component' => 'Production spec & PDF', 'body' => 'Spec view, PDF, order tags and production status.', 'plan' => 'Starter'],
+                    ['no' => 'C-09', 'component' => 'Funnel analytics', 'body' => 'Opens, step drop-off, add-to-carts, revenue per configurator.', 'plan' => 'Starter'],
+                    ['no' => 'C-10', 'component' => 'Global by default', 'body' => 'Shopify Markets currencies, store languages, regional units and size systems.', 'plan' => 'Free'],
+                ],
+            ]],
+            ['formula', [
+                'eyebrow' => 'Pricing engine', 'title' => "One formula,\nrun twice.",
+                'body' => 'The same rules run in the shopper’s browser for instant prices and on our server to sign the final one. Checkout always matches what the shopper saw.',
+                'formula' => 'P = (B + Σoᵢ) × (1 + m) + f(x)', 'badge' => 'BROWSER = SERVER ✓',
+                'terms' => [['symbol' => 'B', 'text' => 'Base price — the Shopify variant'], ['symbol' => 'o', 'text' => 'Option add-ons from price rules'], ['symbol' => 'm', 'text' => 'Percentage markup, e.g. rush'], ['symbol' => 'f', 'text' => 'Your formula — min, max, round, ceil, if']],
+            ]],
+            ['patterns', ['title' => 'Start from a pattern', 'link_label' => 'All templates →', 'link_url' => '/templates', 'count' => 6]],
+            ['spec_card', [
+                'eyebrow' => 'For the workshop', 'title' => 'Orders that read like a drawing, not a puzzle.',
+                'body' => 'Every configured order arrives with a clean spec, a production PDF, order tags and a status your team can move along.',
+                'card_title' => 'PRODUCTION SPEC · ORDER #1042', 'badge' => 'IN PRODUCTION',
+                'rows' => [['k' => 'PRODUCT', 'v' => 'Solitaire Ring — Custom'], ['k' => 'SHAPE', 'v' => 'Oval'], ['k' => 'METAL', 'v' => '18K Rose Gold'], ['k' => 'STONE', 'v' => '1.0 ct · VS1 · G'], ['k' => 'ENGRAVING', 'v' => '“Forever” · script'], ['k' => 'SIGNED PRICE', 'v' => '$2,100.50 USD']],
+                'footer_left' => 'Checked by ______', 'footer_right' => 'Download PDF ↓',
+            ]],
+            ['beta_inline', ['title' => "Order form:\n*beta access*", 'body' => 'We’re onboarding a small group of made-to-order stores. Beta stores get hands-on setup from our team and a direct say in what we build next.']],
+            ['notes', ['title' => 'Notes', 'placement' => 'home', 'prefix' => 'N']],
+            ['cta_band', ['title' => "Your first composition\nships today.", 'style' => 'orange', 'size' => 'xl', 'button_label' => 'Install on Shopify', 'button_url' => $install]],
         ], 'Composa turns any Shopify product into a guided configurator with variants, rules and exact, checkout-verified pricing.');
 
-        $this->page('features', 'Features', [
-            ['features', [
-                'eyebrow' => 'Builder',
-                'title' => 'Everything a custom product needs, *nothing it doesn’t*.',
-                'items' => [
-                    ['code' => 'B-01', 'title' => 'Eleven field types', 'body' => 'Tiles, swatches, buttons, dropdowns, radio, checkboxes, text, number, dimensions, file upload and product add-ons.'],
-                    ['code' => 'B-02', 'title' => 'Repeatable steps', 'body' => 'Let shoppers add several charms, panels or names, each with its own options and price.'],
-                    ['code' => 'B-03', 'title' => 'Variant mapping', 'body' => 'Use your existing options, add your own steps on top, or mix both in one configurator.'],
-                    ['code' => 'B-04', 'title' => 'Translations', 'body' => 'Translate every label, option and message into your store’s languages.'],
-                    ['code' => 'B-05', 'title' => 'Display options', 'body' => 'Popup, side drawer or a dedicated, shareable page; progress bar, step chips and a sticky price.'],
-                    ['code' => 'B-06', 'title' => 'Version history', 'body' => 'Published configurators are fixed; drafts can be previewed, compared and restored.'],
-                ],
-            ]],
-            ['features', [
-                'eyebrow' => 'Pricing',
-                'title' => 'Seven ways to price, *one engine* everywhere.',
-                'intro' => 'The builder preview, the storefront and the server all run the same rules engine, so the price a shopper sees is the price they pay.',
-                'items' => [
-                    ['code' => 'P-01', 'title' => 'Fixed & percent', 'body' => 'Add a flat amount or a percentage of the base price.'],
-                    ['code' => 'P-02', 'title' => 'Per character', 'body' => 'Price engraving by length, with or without spaces.'],
-                    ['code' => 'P-03', 'title' => 'Per unit or area', 'body' => 'Width × height, length or any number field, with a divisor.'],
-                    ['code' => 'P-04', 'title' => 'Tiers', 'body' => 'Quantity breaks or value bands.'],
-                    ['code' => 'P-05', 'title' => 'Price tables', 'body' => 'Look up a price from two answers — size by material, width by height.'],
-                    ['code' => 'P-06', 'title' => 'Formulas', 'body' => 'Safe expressions with min, max, round, ceil and if — no code runs on your store.'],
-                ],
-            ]],
-            ['comparison', [
-                'eyebrow' => 'Compared',
-                'title' => 'Why not a product options app?',
-                'us_label' => 'Composa', 'them_label' => 'Typical options app',
-                'rows' => [
-                    ['feature' => 'Uses your Shopify variants', 'us' => 'Yes — inventory and SKUs stay correct', 'them' => 'Often duplicates them as options'],
-                    ['feature' => 'Price verified at checkout', 'us' => 'Signed price checked by Cart Transform', 'them' => 'Hidden products or editable prices'],
-                    ['feature' => 'Step-by-step flow', 'us' => 'Steps, progress and review', 'them' => 'One long form'],
-                    ['feature' => 'Conditional logic', 'us' => 'Show, hide, require, disable, set price', 'them' => 'Show/hide only'],
-                    ['feature' => 'Production output', 'us' => 'Spec, PDF and files on every order', 'them' => 'Line item properties'],
-                ],
-            ]],
-            $cta,
-        ], 'Steps, rules, seven pricing types, layered previews and a signed checkout.');
-
         $this->page('templates', 'Templates', [
-            ['templates', ['eyebrow' => 'Library', 'title' => 'Starter *templates*', 'intro' => 'Each template is a complete configurator you can edit: steps, rules and prices included. Templates that need a higher plan say so before you install them.', 'count' => 24]],
-            $cta,
-        ], 'Ring builders, apparel, furniture, print, gift boxes and B2B — ready to edit.');
+            ['page_hero', ['title' => 'Pattern *library*', 'intro' => 'Each pattern is a working configurator. Install it, swap in your options and prices, publish.', 'layout' => 'split', 'size' => 'l', 'paper' => false]],
+            ['template_library', []],
+            ['cta_band', ['title' => 'Nothing here fits? Start from a blank sheet.', 'style' => 'orange', 'button_label' => 'See plans', 'button_url' => '/pricing']],
+        ], 'Ring builders, apparel, furniture, print, gift boxes and B2B — working configurators ready to edit.');
 
         $this->page('pricing', 'Pricing', [
-            ['pricing', ['eyebrow' => 'Plans', 'title' => 'Simple plans, *clear limits*.', 'intro' => 'Every plan includes the full storefront and signed checkout. Plans differ in how many configurators, options and products you can use.', 'footnote' => 'Billed monthly through Shopify. Prices in USD; taxes may apply.', 'show_limits' => true]],
-            ['faq', ['eyebrow' => 'Billing', 'title' => 'Pricing questions', 'placement' => 'pricing']],
-            $cta,
+            ['pricing', [
+                'title' => 'Specify your *requirements.*',
+                'intro' => 'Tell us what you’re building and we’ll mark the plan that fits. 14-day free trial, billed through Shopify, no per-order fees.',
+                'footnote' => 'Prices in USD · Shopify Plus stores get exact-price Update mode on any paid plan · live configurators never stop at a limit',
+                'table_title' => 'Full specification',
+            ]],
+            ['notes', ['title' => 'Billing notes', 'placement' => 'pricing', 'prefix' => 'B']],
         ], 'Composa plans and limits. Free on development stores, 14-day trial on paid plans, billed through Shopify.');
 
+        $this->page('features', 'Features', [
+            ['page_hero', ['sheet' => 'Sheet 06 — Detail drawings', 'title' => 'Every part, *drawn to scale.*', 'layout' => 'stacked', 'size' => 'xl', 'paper' => true]],
+            ['chapters', ['index' => true, 'items' => [
+                ['letter' => 'A', 'anchor' => 'builder', 'title' => 'Step builder', 'plan' => 'All plans', 'body' => 'A three-pane editor — steps tree, step and option editor, live preview. Drag to reorder, duplicate, version and publish.', 'spec' => "Up to 50 steps per configurator on Pro\nNested sub-flows and repeatable steps (Growth+)\nDraft and published versions; restore any version\nPopup, drawer or dedicated page", 'doc_url' => '/docs/first-configurator'],
+                ['letter' => 'B', 'anchor' => 'variants', 'title' => 'Shopify variant mapping', 'plan' => 'All plans', 'body' => 'Already sell Color, Size or Carat as variants? Each option becomes a step and the exact variant goes to cart with its own price and stock.', 'spec' => "Order options and choose who picks them\nSold-out and missing combinations disabled\nMix variant steps with custom fields\nLive sync when products change", 'doc_url' => '/docs/variant-mapping'],
+                ['letter' => 'C', 'anchor' => 'inputs', 'title' => 'Input types', 'plan' => 'All plans', 'body' => 'Eleven input types cover everything from colour swatches to dimensions and file uploads.', 'spec' => "Swatches, image tiles, buttons, dropdown, radio, checkbox\nText with live preview, number, W × H\nFile upload (Starter+)\nShopify product picker for real SKUs", 'doc_url' => '/docs/first-configurator'],
+                ['letter' => 'D', 'anchor' => 'rules', 'title' => 'Visual rules', 'plan' => 'All plans', 'body' => 'IF/THEN rules without code. Conditions combine with AND/OR and nest on Growth and above.', 'spec' => "Show, hide, disable, require\nSet default, add price, set preview layer\nSet a Shopify variant option from a custom answer\nRe-validated on the server", 'doc_url' => '/docs/conditional-rules'],
+                ['letter' => 'E', 'anchor' => 'pricing', 'title' => 'Pricing engine', 'plan' => 'Free → Pro', 'body' => 'Seven price rule types, run in the browser for speed and on the server to sign the price.', 'spec' => "Fixed and percent (Free)\nPer character (Starter)\nPer unit, tiered, lookup table (Growth)\nFormula with min, max, round, ceil, if (Pro)", 'doc_url' => '/docs/pricing-types'],
+                ['letter' => 'F', 'anchor' => 'preview', 'title' => 'Live preview', 'plan' => 'All plans', 'body' => 'Layered images swap with every choice; text overlays show engraving or print as the shopper types.', 'spec' => "Layers driven by any field\nImages served from Shopify’s CDN\nComposite image on cart line and order\nVariant images used automatically", 'doc_url' => ''],
+                ['letter' => 'G', 'anchor' => 'checkout', 'title' => 'One-line checkout', 'plan' => 'All plans', 'body' => 'Every configuration reaches the cart as one line, priced by Cart Transform. Composa never creates hidden or fee products.', 'spec' => "HMAC-signed price, verified at checkout\nUpdate mode on Shopify Plus, Expand elsewhere\nLinked SKUs track inventory\nTampered prices fall back to the normal price", 'doc_url' => '/docs/signed-prices'],
+                ['letter' => 'H', 'anchor' => 'production', 'title' => 'Production spec', 'plan' => 'Starter+', 'body' => 'Orders arrive with a clean spec, configured image, production PDF and a status your workshop can update.', 'spec' => "Spec view per order line\nPDF with your branding (Pro)\nOrder tags and production status\nEmail to your workshop", 'doc_url' => ''],
+                ['letter' => 'I', 'anchor' => 'analytics', 'title' => 'Funnel analytics', 'plan' => 'Starter+', 'body' => 'See where shoppers stop, which options sell and what each configurator earns.', 'spec' => "Opens, step drop-off, add-to-cart rate\nMost chosen options per field\nRevenue and average order per configurator\nCSV export (Pro)", 'doc_url' => ''],
+                ['letter' => 'J', 'anchor' => 'global', 'title' => 'Global and fast', 'plan' => 'All plans', 'body' => 'Built for every market from day one, and light enough not to slow your product pages.', 'spec' => "Shopify Markets currencies\nEvery store language\nRegional units and size systems\nStorefront script loads on click, under 60 KB", 'doc_url' => ''],
+            ]]],
+            ['input_types', ['title' => 'Input types, all eleven', 'label' => 'Detail C — schedule', 'extra_title' => 'Nest & repeat', 'extra_body' => 'Any step can open a sub-flow or repeat.', 'items' => [
+                ['glyph' => '●', 'name' => 'Swatches', 'desc' => 'Colours, metals, fabrics'], ['glyph' => '▦', 'name' => 'Image tiles', 'desc' => 'Big visual choices'], ['glyph' => '▭', 'name' => 'Buttons', 'desc' => 'Short text choices'],
+                ['glyph' => '▾', 'name' => 'Dropdown', 'desc' => 'Long lists'], ['glyph' => '◉', 'name' => 'Radio', 'desc' => 'With descriptions'], ['glyph' => '☑', 'name' => 'Checkbox', 'desc' => 'Pick several add-ons'],
+                ['glyph' => 'Aa', 'name' => 'Text', 'desc' => 'Names, engraving, messages'], ['glyph' => '12', 'name' => 'Number', 'desc' => 'Quantities, weights'], ['glyph' => 'W×H', 'name' => 'Dimensions', 'desc' => 'Priced per unit'],
+                ['glyph' => '↑', 'name' => 'File upload', 'desc' => 'Artwork, photos, logos'], ['glyph' => '⌘', 'name' => 'Product picker', 'desc' => 'Real stocked SKUs'],
+            ]]],
+            ['cta_band', ['title' => 'See every part working together.', 'style' => 'dark', 'secondary_label' => 'Templates', 'secondary_url' => '/templates', 'button_label' => 'Install on Shopify', 'button_url' => $install]],
+        ], 'Steps, variant mapping, rules, seven pricing types, layered previews and a signed checkout.');
+
         $this->page('about', 'About', [
-            ['rich_text', ['title' => 'Why Composa', 'body' => "Custom products are where small brands win — engagement rings sized and set to order, sofas in the customer's fabric, signage cut to the wall.\n\nSelling them online usually means a pile of hidden products, prices that can be edited in the cart, and orders that arrive as a wall of text. Composa exists to fix that: a configurator that uses the variants you already have, prices exactly, and hands your workshop a clean spec.\n\n## How we build\n\n- **Correct before clever.** One pricing engine runs in the builder, the storefront and on our server.\n- **Fast storefronts.** The script on your theme is tiny; the configurator loads when a shopper opens it.\n- **No lock-in.** Your products, variants and orders stay standard Shopify data."]],
-            $cta,
-        ], 'Why we built Composa and how we work.');
+            ['page_hero', ['sheet' => 'Sheet 08 — About', 'layout' => 'statement', 'paper' => true, 'title' => 'Most things worth buying are *made for someone.* Selling them online shouldn’t mean squeezing them into a dropdown.', 'intro' => 'Composa exists for the jewellers, furniture makers, printers and small workshops who make things to order. We build the part between the shopper’s idea and the workshop’s bench: a configurator that asks good questions, prices honestly and hands over a spec that makes sense.']],
+            ['tolerances', ['title' => 'Tolerances', 'label' => 'Rules we don’t bend', 'items' => [
+                ['code' => 'T1', 'title' => 'No hidden products. Ever.', 'body' => 'We price the cart line directly. Your catalog, inventory, reports and marketing feeds stay exactly as you built them.'],
+                ['code' => 'T2', 'title' => 'The price the shopper sees is the price they pay.', 'body' => 'Every price is calculated twice and signed. If anything is tampered with, the line falls back to the normal price instead of selling below cost.'],
+                ['code' => 'T3', 'title' => 'Limits are honest, and never break a sale.', 'body' => 'Plans have clear limits. Hitting one pauses new work — it never takes a live configurator offline.'],
+                ['code' => 'T4', 'title' => 'Global from the first sheet.', 'body' => 'Currencies, languages, units and size systems are part of the product, not an add-on.'],
+                ['code' => 'T5', 'title' => 'The workshop is a customer too.', 'body' => 'An order isn’t finished at checkout. We design the spec, PDF and status for the people who make the thing.'],
+            ]]],
+            ['drawn_for', ['title' => 'Drawn for', 'items' => [
+                ['code' => 'D-01', 'title' => 'Jewelry', 'desc' => 'Rings, pendants, names'], ['code' => 'D-02', 'title' => 'Furniture', 'desc' => 'Sizes, fabrics, finishes'], ['code' => 'D-03', 'title' => 'Print', 'desc' => 'Uploads, papers, frames'],
+                ['code' => 'D-04', 'title' => 'Apparel', 'desc' => 'Variants and embroidery'], ['code' => 'D-05', 'title' => 'Gifts', 'desc' => 'Boxes and messages'], ['code' => 'D-06', 'title' => 'B2B', 'desc' => 'Quotes and quantity tiers'],
+            ]]],
+            ['cta_band', ['title' => 'Make something to order? Let’s talk.', 'style' => 'orange', 'button_label' => 'Join the beta', 'button_url' => '/early-access']],
+        ], 'Why we built Composa and the rules we don’t bend.');
 
         $this->page('contact', 'Contact', [
-            ['form', ['eyebrow' => 'Contact', 'title' => 'Talk to a *person*.', 'intro' => 'Questions about a configurator, a plan or a partnership. We reply within one business day.', 'kind' => 'contact', 'success' => 'Thanks — we’ve got your message and will reply within one business day.']],
+            ['contact', [
+                'sheet' => 'Sheet 09 — Contact', 'title' => 'Send us a *request.*',
+                'intro' => 'Pick what it’s about and we’ll route it to the right person. Merchants already using Composa can also reach support from inside the app.',
+                'success' => 'Thanks — it’s on the board.',
+                'channels' => [['k' => 'Support', 'v' => 'support@composa.app'], ['k' => 'Sales', 'v' => 'hello@composa.app'], ['k' => 'In the app', 'v' => 'Help › Contact support (fastest for merchants)'], ['k' => 'Status', 'v' => 'Live system status on the Status page']],
+            ]],
         ], 'Contact the Composa team.');
 
-        $this->page('early-access', 'Early access', [
-            ['form', ['eyebrow' => 'Early access', 'title' => 'Help shape *what’s next*.', 'intro' => 'We invite a small group of stores to try new features before release — 3D previews, B2B quotes and bundles. Tell us about your products.', 'kind' => 'beta', 'success' => 'Thanks for applying. We review applications every week and will email you.']],
-        ], 'Apply for early access to new Composa features.');
+        $this->page('early-access', 'Beta program', [
+            ['beta', [
+                'sheet' => 'Sheet 10 — Beta program', 'title' => 'Help us draw *version one.*',
+                'intro' => 'We’re working closely with a small group of made-to-order stores before launch. You get hands-on setup; we get honest feedback from people who make things for a living.',
+                'success' => 'You’re on the drawing board.',
+                'timeline' => [['title' => 'Apply', 'desc' => 'three short steps, about two minutes'], ['title' => 'Call', 'desc' => 'we learn how you take custom orders today'], ['title' => 'Set up', 'desc' => 'we build your first configurator with you'], ['title' => 'Shape it', 'desc' => 'regular check-ins until launch']],
+            ]],
+            ['gets', ['title' => 'What beta stores get', 'items' => [
+                ['code' => 'G1', 'title' => 'Hands-on setup', 'body' => 'Our team builds your first configurator with you, including variant mapping and pricing rules.'],
+                ['code' => 'G2', 'title' => 'A direct line', 'body' => 'Priority support and a shared channel with the people building Composa.'],
+                ['code' => 'G3', 'title' => 'A say in the roadmap', 'body' => 'Your feedback decides what we build next. Pricing is the same published Shopify plans as everyone else.'],
+            ]]],
+        ], 'Apply to the Composa beta program.');
 
         $this->page('changelog', 'Changelog', [
-            ['changelog', ['eyebrow' => 'Releases', 'title' => 'What’s *new*', 'count' => 30]],
-            ['form', ['eyebrow' => 'Updates', 'title' => 'Get release notes by email', 'kind' => 'newsletter', 'success' => 'You’re subscribed.']],
+            ['page_hero', ['sheet' => 'Sheet 07 — Revision history', 'title' => 'Revisions', 'layout' => 'split', 'size' => 'xl', 'paper' => false, 'secondary_label' => 'Email me updates', 'secondary_url' => '#updates']],
+            ['changelog', ['count' => 30]],
+            ['newsletter_band', ['title' => 'Release notes by email.', 'source' => 'changelog']],
         ], 'New features, improvements and fixes in Composa.');
 
         $this->page('status', 'Status', [
-            ['status', ['eyebrow' => 'Live', 'title' => 'System *status*']],
+            ['status', ['sheet' => 'Sheet 12 — System status']],
         ], 'Current status of Composa services.');
 
         $legal = [
-            'privacy' => ['Privacy policy', "## Who we are\n\nComposa provides a product configurator app for Shopify merchants. This policy explains what we collect when merchants install Composa and when their customers use a Composa configurator.\n\n## Data we collect from merchants\n\nStore name, domain, contact email, plan and the configuration data you create in the app. We receive this from Shopify when you install.\n\n## Data we process for shoppers\n\nThe choices a shopper makes in a configurator, any files they upload, and anonymous usage events (opens, steps reached). We do not collect payment details — checkout is handled by Shopify.\n\n## How long we keep it\n\nConfigurations that never become orders expire after 30 days. Uploaded files that are not ordered are deleted after 30 days. All store data is deleted 48 hours after uninstall.\n\n## Your rights\n\nWe respond to Shopify's customer data request and redaction webhooks within 30 days. Contact privacy@composa.app for anything else.\n\n## Sub-processors\n\nHosting and storage (Railway), error monitoring (Sentry) and email delivery. A current list is available on request."],
-            'terms' => ['Terms of service', "## The service\n\nComposa is a Shopify app. By installing it you agree to these terms and to Shopify's terms for apps.\n\n## Billing\n\nPlans are billed by Shopify through your Shopify invoice. Upgrades, downgrades and cancellations are made in the app and handled by Shopify. We do not offer refunds outside Shopify's billing process.\n\n## Plan limits\n\nEach plan has limits shown on the pricing page. When you reach a limit, new items of that kind pause until you upgrade. After a downgrade you have 7 days before extra configurators return to draft.\n\n## Your content\n\nYou own your products, configurators and orders. You give us permission to process them only to run the service.\n\n## Acceptable use\n\nDon't use Composa to sell products that break Shopify's Acceptable Use Policy, and don't try to bypass pricing or limits.\n\n## Liability\n\nThe service is provided as is. Our liability is limited to the fees you paid in the last 12 months."],
-            'dpa' => ['Data processing addendum', "## Roles\n\nThe merchant is the controller of shopper data; Composa is the processor.\n\n## Processing\n\nWe process configurator answers, uploaded files and usage events only to provide the service and on the merchant's instructions.\n\n## Security\n\nData is encrypted in transit and at rest. Access tokens and signing secrets are encrypted in the database. Staff access is role-based, and every support session is logged.\n\n## Deletion\n\nOn uninstall, store data is deleted after 48 hours. Shopify redaction requests are completed within 30 days."],
+            'privacy' => ['Privacy policy', "## What we collect\n> Only what we need to run your configurators and orders.\n\nStore details from Shopify (name, domain, contact email, plan), the configurators you create, and the answers and files shoppers submit so configured orders can be made. Checkout and payment details stay with Shopify.\n\n## How we use it\n> To make Composa work. We don’t sell data.\n\nTo provide the service, calculate and verify prices, generate production documents, send service emails and provide support.\n\n## Where it’s stored\n> Your data is kept separate from other shops, and files are private.\n\nData is stored per shop in managed databases and private file storage. Shopper files are served through short-lived signed links.\n\n## How long we keep it\n> Unused data is cleaned up automatically.\n\nConfigurations that never become orders expire after 30 days. Uploaded files that are not ordered are deleted after 30 days. All shop data is deleted 48 hours after uninstall.\n\n## Sub-processors\n> A short list of vendors help us run the service.\n\nHosting and storage, error monitoring and email delivery providers. The current list is available on request.\n\n## Your rights\n> Ask and we’ll show, fix or delete your data.\n\nAccess, correction and deletion requests are handled through Shopify’s data request flow or by contacting privacy@composa.app."],
+            'terms' => ['Terms of service', "## The service\n> You get the features of your plan.\n\nComposa provides a product configurator app for Shopify stores under the plan you select in the app.\n\n## Plans and billing\n> Billed by Shopify. No per-order fees.\n\nFees are billed through Shopify after any free trial. Plan limits apply as published on the pricing page. Upgrades, downgrades and cancellations are made in the app and handled by Shopify.\n\n## Plan limits\n> Limits pause new work; they never stop a live sale.\n\nWhen you reach a limit, new items of that kind pause until you upgrade. After a downgrade you have 7 days before extra configurators return to draft.\n\n## Your content\n> What you build is yours.\n\nYou own your configurators, images and product data. You grant us the licence needed to host and display them.\n\n## Acceptable use\n> Play fair; don’t tamper with prices.\n\nDon’t misuse the service, attempt to bypass price signing or plan limits, or use it for products that break Shopify’s Acceptable Use Policy.\n\n## Ending the service\n> Leave anytime; we clean up after you.\n\nYou can uninstall at any time. Shop data is removed 48 hours after uninstall."],
+            'gdpr' => ['GDPR & data requests', "## Shopify compliance webhooks\n> We answer every data request Shopify sends us.\n\nWe process the customers/data_request, customers/redact and shop/redact webhooks for every installed store.\n\n## Customer data requests\n> Shoppers can get a copy of their configurations.\n\nRequested customer data, including configurations and uploads, is compiled and provided to the merchant within 30 days.\n\n## Redaction\n> When asked to delete, we delete.\n\nCustomer and shop redaction requests remove personal data from configurations, orders and uploads.\n\n## Uninstall cleanup\n> Uninstall = gone in 48 hours.\n\nShop data is deleted 48 hours after uninstall; abandoned uploads are deleted after 30 days.\n\n## Data processing agreement\n> Need a DPA? Just ask.\n\nThe merchant is the controller of shopper data and Composa is the processor. A DPA is available on request from privacy@composa.app."],
         ];
         foreach ($legal as $slug => [$title, $body]) {
             $this->page('legal/'.$slug, $title, [['legal', ['body' => $body]]], null, 'legal');
@@ -216,16 +279,21 @@ class ContentSeeder extends Seeder
     private function faqs(): void
     {
         $faqs = [
-            ['Does Composa work with my existing variants?', 'Yes. Composa reads your product’s options (for example Color, Size and Carat) and turns them into steps. The order is placed on the matching variant, so inventory and SKUs stay correct.', ['home', 'help', 'app']],
-            ['Will it slow down my store?', 'The script on your theme is about 2 KB compressed and only wires up the Customize button. The configurator itself loads when a shopper opens it.', ['home']],
-            ['Can shoppers change the price in the cart?', 'No. The price is calculated and signed on our server; a Shopify Cart Transform checks the signature at checkout. If anything was edited, the line falls back to the product’s normal price.', ['home', 'help']],
-            ['Does it work with my theme?', 'Composa uses a theme app extension, so it works with any Online Store 2.0 theme without editing code. You can place the button with a block or let the app embed add it.', ['home', 'help']],
-            ['How am I billed?', 'Through Shopify. Your plan appears on your Shopify invoice; you can change or cancel it from the app at any time.', ['pricing', 'app']],
-            ['Is there a free plan?', 'Composa is free on development stores, so agencies and developers can build before a store launches. Paid plans include a 14-day free trial.', ['pricing']],
-            ['What happens when I reach a limit?', 'You’ll see a warning at 80%. At 100%, new items of that kind pause — for example you can’t publish another configurator — until you upgrade. Nothing already live is switched off.', ['pricing', 'app']],
-            ['What happens if I downgrade?', 'You have 7 days to fit the new plan. After that, the most recently published configurators above the limit return to draft.', ['pricing']],
-            ['Do you offer discounts or coupons?', 'Pricing is set in Shopify’s app billing, which doesn’t support coupons, so everyone pays the listed price. Every paid plan has a free trial.', ['pricing']],
+            ['Does it work with my theme?', 'Yes — any Online Store 2.0 theme, as an app block and app embed. No code edits.', ['home', 'help']],
+            ['My products already have variants. Do I start again?', 'No. Composa maps your Shopify options (Color, Size, Carat…) to steps, and the exact variant goes to cart with its stock.', ['home', 'help', 'app']],
+            ['Will it add fee products to my store?', 'Never. The configured item is priced by Cart Transform on its own line.', ['home']],
+            ['How many configurators do I get?', 'From 1 on Free to 50 on Pro, with step, option, rule and product limits per plan. See [Pricing](/pricing).', ['home']],
+            ['Other currencies and languages?', 'Prices convert with your Shopify Markets rates; labels translate into every store language.', ['home']],
+            ['Can shoppers upload files?', 'Yes, on paid plans. Uploads are stored privately and linked to the order.', ['home']],
+            ['How does the free trial work?', 'Every paid plan starts with 14 days free. After that you’re billed on your Shopify invoice.', ['pricing', 'app']],
+            ['What happens when I reach a limit?', 'We email you at 80%. At 100%, new publishes or assignments of that kind pause. Live configurators keep selling.', ['pricing', 'app']],
+            ['Can I change plans later?', 'Any time, from Plan & usage in the app. Downgrades get a 7-day grace period.', ['pricing']],
+            ['Do you charge per order?', 'No. No per-order or transaction fees.', ['pricing']],
+            ['What if I uninstall?', 'Shop data is removed 48 hours after uninstall, as Shopify’s GDPR rules require.', ['pricing']],
         ];
+        $questions = array_column($faqs, 0);
+        // Seeded questions nobody edited and that are no longer in the list are retired.
+        Faq::query()->where('locale', 'en')->whereNotIn('question', $questions)->whereColumn('updated_at', 'created_at')->delete();
         foreach ($faqs as $i => [$q, $a, $placements]) {
             Faq::query()->firstOrCreate(['question' => $q, 'locale' => 'en'], ['answer' => $a, 'placements' => $placements, 'sort' => $i, 'status' => 'published']);
         }

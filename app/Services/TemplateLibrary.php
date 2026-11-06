@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Filament\Resources\TemplateResource;
 use App\Models\Plan;
 use App\Models\Shop;
 use App\Models\Template;
@@ -26,7 +27,7 @@ class TemplateLibrary
                 return [
                     'key' => $t->key,
                     'name' => $t->name,
-                    'category' => $t->category,
+                    'category' => TemplateResource::CATEGORIES[$t->category] ?? $t->category,
                     'description' => $t->description,
                     'cover' => $t->cover_image,
                     'featured' => $t->featured,

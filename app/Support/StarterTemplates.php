@@ -23,7 +23,7 @@ final class StarterTemplates
     {
         return [
             [
-                'key' => 'ring-builder', 'name' => 'Ring builder', 'category' => 'Jewelry', 'featured' => true, 'min_plan' => 'growth',
+                'key' => 'ring-builder', 'name' => 'Ring builder', 'category' => 'jewelry', 'featured' => true, 'min_plan' => 'growth',
                 'description' => 'Stone shape drives compatible settings, metal and karat rules, and a carat × clarity price grid.',
                 'definition' => self::def([
                     ['key' => 's_shape', 'title' => 'Shape', 'help' => 'Choose the cut of your centre stone.', 'fields' => [['key' => 'shape', 'type' => 'image_tiles', 'label' => 'Shape', 'required' => true, 'options' => [self::opt('round', 'Round', null, ['default' => true]), self::opt('oval', 'Oval', 40), self::opt('princess', 'Princess', 60), self::opt('emerald', 'Emerald', 80)]]]],
@@ -40,7 +40,7 @@ final class StarterTemplates
                     'layers' => [['id' => 'text', 'z' => 3, 'type' => 'text', 'field' => 'engraving', 'style' => ['font' => 'script', 'color' => '#6B5B45']]]]),
             ],
             [
-                'key' => 'name-necklace', 'name' => 'Name necklace', 'category' => 'Jewelry', 'featured' => true, 'min_plan' => 'starter',
+                'key' => 'name-necklace', 'name' => 'Name necklace', 'category' => 'jewelry', 'featured' => true, 'min_plan' => 'starter',
                 'description' => 'Live name preview with a character limit and a price per letter.',
                 'definition' => self::def([
                     ['key' => 's_font', 'title' => 'Font', 'fields' => [['key' => 'font', 'type' => 'buttons', 'label' => 'Font', 'required' => true, 'options' => [self::opt('script', 'Script', null, ['default' => true]), self::opt('serif', 'Serif'), self::opt('block', 'Block')]]]],
@@ -49,7 +49,7 @@ final class StarterTemplates
                 ], [], ['layers' => [['id' => 'name', 'z' => 2, 'type' => 'text', 'field' => 'name_text', 'style' => ['font' => 'script']]]]),
             ],
             [
-                'key' => 'pendant-formula', 'name' => 'Pendant (weight formula)', 'category' => 'Jewelry', 'featured' => false, 'min_plan' => 'pro',
+                'key' => 'pendant-formula', 'name' => 'Pendant (weight formula)', 'category' => 'jewelry', 'featured' => false, 'min_plan' => 'pro',
                 'description' => 'Price = weight × metal rate + making charge, recalculated live.',
                 'definition' => self::def([
                     ['key' => 's_metal', 'title' => 'Metal', 'fields' => [['key' => 'metal', 'type' => 'swatch', 'label' => 'Metal', 'required' => true, 'options' => [self::opt('gold18', '18K Gold', null, ['default' => true, 'swatch' => '#E3C16F', 'vars' => ['metal_rate' => 62.5]]), self::opt('silver', 'Sterling silver', null, ['swatch' => '#D7DBE0', 'vars' => ['metal_rate' => 1.1]])]]]],
@@ -57,7 +57,7 @@ final class StarterTemplates
                 ], [], ['settings' => ['markup_percent' => 0, 'rounding' => ['mode' => 'ending', 'ending' => 0.99], 'variables' => ['making' => 35], 'formula' => 'weight_g * metal_rate + making', 'formula_label' => 'Metal and making']]),
             ],
             [
-                'key' => 'custom-table', 'name' => 'Custom table', 'category' => 'Furniture', 'featured' => true, 'min_plan' => 'growth',
+                'key' => 'custom-table', 'name' => 'Custom table', 'category' => 'furniture', 'featured' => true, 'min_plan' => 'growth',
                 'description' => 'Width × length priced per square foot, with wood, finish and legs.',
                 'definition' => self::def([
                     ['key' => 's_size', 'title' => 'Size', 'fields' => [['key' => 'size', 'type' => 'dimensions', 'label' => 'Table top (in)', 'unit' => 'in', 'required' => true, 'default' => ['w' => 60, 'h' => 30], 'validation' => ['min_w' => 30, 'max_w' => 120, 'min_h' => 20, 'max_h' => 48], 'price_rule' => ['type' => 'per_unit', 'basis' => 'area', 'amount' => 12, 'divisor' => 144]]]],
@@ -67,7 +67,7 @@ final class StarterTemplates
                 ]),
             ],
             [
-                'key' => 'modular-sofa', 'name' => 'Modular sofa', 'category' => 'Furniture', 'featured' => false, 'min_plan' => 'growth',
+                'key' => 'modular-sofa', 'name' => 'Modular sofa', 'category' => 'furniture', 'featured' => false, 'min_plan' => 'growth',
                 'description' => 'Add seat modules one by one, then choose fabric and legs.',
                 'definition' => self::def([
                     ['key' => 'modules', 'title' => 'Modules', 'repeatable' => true, 'max_repeats' => 6, 'required' => true, 'fields' => [['key' => 'module', 'type' => 'dropdown', 'label' => 'Module', 'required' => true, 'options' => [self::opt('seat', 'Seat', 420), self::opt('corner', 'Corner', 560), self::opt('chaise', 'Chaise', 640)]]]],
@@ -76,7 +76,7 @@ final class StarterTemplates
                 ]),
             ],
             [
-                'key' => 'variant-apparel', 'name' => 'Apparel with variants', 'category' => 'Print & apparel', 'featured' => true, 'min_plan' => 'starter',
+                'key' => 'variant-apparel', 'name' => 'Apparel with variants', 'category' => 'apparel', 'featured' => true, 'min_plan' => 'starter',
                 'description' => 'Uses your Shopify Color, Size and Material variants as steps, then adds embroidery.',
                 'definition' => self::def([
                     ['key' => 's_color', 'title' => 'Color', 'source' => 'shopify_option', 'fields' => [['key' => 'color', 'type' => 'swatch', 'label' => 'Color', 'required' => true, 'variant_option' => 'Color', 'options' => [self::opt('Black', 'Black'), self::opt('Navy', 'Navy')]]]],
@@ -85,7 +85,7 @@ final class StarterTemplates
                 ], [], ['variant_mode' => 'variants']),
             ],
             [
-                'key' => 'framed-print', 'name' => 'Framed print', 'category' => 'Print & apparel', 'featured' => false, 'min_plan' => 'starter',
+                'key' => 'framed-print', 'name' => 'Framed print', 'category' => 'print', 'featured' => false, 'min_plan' => 'starter',
                 'description' => 'Size, paper and frame with an artwork upload.',
                 'definition' => self::def([
                     ['key' => 's_size', 'title' => 'Size', 'fields' => [['key' => 'print_size', 'type' => 'buttons', 'label' => 'Size (cm)', 'required' => true, 'options' => [self::opt('30x40', '30 × 40', null, ['default' => true]), self::opt('50x70', '50 × 70', 40), self::opt('70x100', '70 × 100', 90)]]]],
@@ -95,7 +95,7 @@ final class StarterTemplates
                 ]),
             ],
             [
-                'key' => 'gift-box', 'name' => 'Gift box', 'category' => 'Gifts', 'featured' => true, 'min_plan' => 'growth',
+                'key' => 'gift-box', 'name' => 'Gift box', 'category' => 'gifts', 'featured' => true, 'min_plan' => 'growth',
                 'description' => 'Pick items into a box (repeatable step), then add a message card.',
                 'definition' => self::def([
                     ['key' => 's_box', 'title' => 'Box', 'fields' => [['key' => 'box', 'type' => 'image_tiles', 'label' => 'Box', 'required' => true, 'options' => [self::opt('small', 'Small (3 items)', null, ['default' => true]), self::opt('large', 'Large (6 items)', 12)]]]],
@@ -104,7 +104,7 @@ final class StarterTemplates
                 ]),
             ],
             [
-                'key' => 'b2b-signage', 'name' => 'B2B signage', 'category' => 'B2B', 'featured' => false, 'min_plan' => 'growth',
+                'key' => 'b2b-signage', 'name' => 'B2B signage', 'category' => 'b2b', 'featured' => false, 'min_plan' => 'growth',
                 'description' => 'Material, size and mounting with quantity tiers.',
                 'definition' => self::def([
                     ['key' => 's_material', 'title' => 'Material', 'fields' => [['key' => 'material', 'type' => 'radio', 'label' => 'Material', 'required' => true, 'options' => [self::opt('acrylic', 'Acrylic', null, ['default' => true]), self::opt('aluminium', 'Brushed aluminium', 18), self::opt('wood', 'Wood', 12)]]]],
@@ -113,7 +113,7 @@ final class StarterTemplates
                 ], [], ['price_rules' => [['id' => 'tiers', 'label' => 'Quantity price', 'type' => 'tiered', 'basis' => 'quantity', 'tiers' => [['min' => 1, 'max' => 9, 'amount' => 0], ['min' => 10, 'max' => 49, 'amount' => -4], ['min' => 50, 'amount' => -8]]]]]),
             ],
             [
-                'key' => 'blank', 'name' => 'Blank', 'category' => 'Blank', 'featured' => false, 'min_plan' => null,
+                'key' => 'blank', 'name' => 'Blank', 'category' => 'other', 'featured' => false, 'min_plan' => null,
                 'description' => 'One empty step — add any input type.',
                 'definition' => self::def([['key' => 'step_1', 'title' => 'Step 1', 'fields' => [['key' => 'choice', 'type' => 'buttons', 'label' => 'Choose an option', 'required' => true, 'options' => [self::opt('option_a', 'Option A', null, ['default' => true]), self::opt('option_b', 'Option B', 10)]]]]]),
             ],

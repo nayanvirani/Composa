@@ -41,7 +41,7 @@ class TemplateResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public const CATEGORIES = ['jewelry' => 'Jewelry', 'apparel' => 'Apparel', 'furniture' => 'Furniture', 'print' => 'Print & signage', 'gifts' => 'Gifts', 'b2b' => 'B2B', 'other' => 'Other'];
+    public const CATEGORIES = ['jewelry' => 'Jewelry', 'furniture' => 'Furniture', 'apparel' => 'Apparel', 'print' => 'Print', 'gifts' => 'Gifts', 'b2b' => 'B2B', 'other' => 'Other'];
 
     public static function form(Schema $schema): Schema
     {

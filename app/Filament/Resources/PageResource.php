@@ -15,6 +15,7 @@ use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -80,99 +81,56 @@ class PageResource extends Resource
     /** @return list<Block> */
     public static function blocks(): array
     {
-        $hidden = Toggle::make('hidden')->label('Hide this section');
-        $heading = fn () => [TextInput::make('eyebrow')->maxLength(60), TextInput::make('title')->required(), Textarea::make('intro')->rows(2)];
+        $hidden = fn () => Toggle::make('hidden')->label('Hide this section');
+        $title = fn (string $default = '') => Textarea::make('title')->rows(2)->default($default)->helperText('Wrap words in *asterisks* for the orange italic accent.');
+        $sheet = fn () => TextInput::make('sheet')->label('Sheet label')->placeholder('Sheet 03 — Pricing');
+        $buttons = fn () => Grid::make(2)->schema([
+            TextInput::make('primary_label'), TextInput::make('primary_url'),
+            TextInput::make('secondary_label'), TextInput::make('secondary_url'),
+        ]);
+        $block = fn (string $type, $icon, array $schema) => Block::make($type)->label(PageSections::label($type))->icon($icon)->schema([...$schema, $hidden()]);
 
         return [
-            Block::make('hero')->label(PageSections::label('hero'))->icon(Heroicon::OutlinedSparkles)->schema([
-                TextInput::make('eyebrow')->maxLength(60),
-                Textarea::make('title')->required()->rows(2)->helperText('Wrap words in *asterisks* to highlight them.'),
-                Textarea::make('subtitle')->rows(3),
-                Grid::make(2)->schema([
-                    TextInput::make('primary_label')->default('Install on Shopify'),
-                    TextInput::make('primary_url')->default('https://apps.shopify.com/composa'),
-                    TextInput::make('secondary_label'),
-                    TextInput::make('secondary_url'),
+            $block('page_hero', Heroicon::OutlinedRectangleStack, [
+                $sheet(), $title(), Textarea::make('intro')->rows(3),
+                Grid::make(3)->schema([
+                    Select::make('layout')->options(['split' => 'Title left, intro right', 'stacked' => 'Stacked', 'statement' => 'Large statement'])->default('split'),
+                    Select::make('size')->options(['xl' => 'Extra large', 'l' => 'Large'])->default('xl'),
+                    Toggle::make('paper')->label('Grid paper background')->default(true)->inline(false),
                 ]),
-                TextInput::make('note')->label('Small print under the buttons'),
-                TextInput::make('image')->label('Image URL')->url(),
-                $hidden,
+                $buttons(),
             ]),
-            Block::make('spec_strip')->label(PageSections::label('spec_strip'))->icon(Heroicon::OutlinedHashtag)->schema([
-                Repeater::make('items')->schema([TextInput::make('value')->required(), TextInput::make('label')->required()])->columns(2)->maxItems(6)->defaultItems(4),
-                $hidden,
+            $block('composer', Heroicon::OutlinedSparkles, [$title('Compose anything. *Sell it as one.*'), Textarea::make('intro')->rows(3), $buttons()]),
+            $block('ledger', Heroicon::OutlinedScale, [
+                Grid::make(2)->schema([TextInput::make('before_label')->default('§1 Without Composa'), TextInput::make('after_label')->default('§2 With Composa')]),
+                Repeater::make('before')->schema([TextInput::make('text')->required()])->maxItems(6),
+                Repeater::make('after')->schema([TextInput::make('title')->required(), TextInput::make('text')])->columns(2)->maxItems(6),
             ]),
-            Block::make('features')->label(PageSections::label('features'))->icon(Heroicon::OutlinedSquares2x2)->schema([
-                ...$heading(),
-                Repeater::make('items')->schema([TextInput::make('code')->label('Code')->placeholder('F-01')->maxLength(8), TextInput::make('title')->required(), Textarea::make('body')->rows(2)])->columns(3)->collapsible(),
-                $hidden,
-            ]),
-            Block::make('steps')->label(PageSections::label('steps'))->icon(Heroicon::OutlinedListBullet)->schema([
-                ...$heading(),
-                Repeater::make('items')->schema([TextInput::make('title')->required(), Textarea::make('body')->rows(2)])->columns(2)->maxItems(8),
-                $hidden,
-            ]),
-            Block::make('variant_demo')->label(PageSections::label('variant_demo'))->icon(Heroicon::OutlinedArrowsRightLeft)->schema([
-                ...$heading(),
-                Repeater::make('options')->label('Shopify options shown')->schema([TextInput::make('name')->required(), TextInput::make('values')->required()->helperText('Comma separated')])->columns(2)->maxItems(3),
-                $hidden,
-            ]),
-            Block::make('templates')->label(PageSections::label('templates'))->icon(Heroicon::OutlinedRectangleGroup)->schema([
-                ...$heading(),
-                TextInput::make('count')->numeric()->default(6)->minValue(1)->maxValue(24),
-                Toggle::make('featured_only')->label('Featured templates only'),
-                $hidden,
-            ]),
-            Block::make('pricing')->label(PageSections::label('pricing'))->icon(Heroicon::OutlinedCurrencyDollar)->schema([
-                ...$heading(),
-                Textarea::make('footnote')->rows(2)->default('Billed through Shopify. Prices in USD.'),
-                Toggle::make('show_limits')->label('Show the full limits table')->default(true),
-                $hidden,
-            ]),
-            Block::make('comparison')->label(PageSections::label('comparison'))->icon(Heroicon::OutlinedTableCells)->schema([
-                ...$heading(),
-                Grid::make(2)->schema([TextInput::make('us_label')->default('Composa'), TextInput::make('them_label')->default('Typical options app')]),
-                Repeater::make('rows')->schema([TextInput::make('feature')->required(), TextInput::make('us')->required(), TextInput::make('them')->required()])->columns(3),
-                $hidden,
-            ]),
-            Block::make('testimonials')->label(PageSections::label('testimonials'))->icon(Heroicon::OutlinedChatBubbleLeftRight)->schema([
-                ...$heading(),
-                TextInput::make('count')->numeric()->default(3),
-                $hidden,
-            ]),
-            Block::make('faq')->label(PageSections::label('faq'))->icon(Heroicon::OutlinedQuestionMarkCircle)->schema([
-                ...$heading(),
-                Select::make('placement')->options(PageSections::FAQ_PLACEMENTS)->default('home')->required(),
-                $hidden,
-            ]),
-            Block::make('posts')->label(PageSections::label('posts'))->icon(Heroicon::OutlinedNewspaper)->schema([
-                ...$heading(),
-                TextInput::make('count')->numeric()->default(3),
-                $hidden,
-            ]),
-            Block::make('changelog')->label(PageSections::label('changelog'))->icon(Heroicon::OutlinedClock)->schema([
-                ...$heading(),
-                TextInput::make('count')->numeric()->default(10),
-                $hidden,
-            ]),
-            Block::make('status')->label(PageSections::label('status'))->icon(Heroicon::OutlinedSignal)->schema([...$heading(), $hidden]),
-            Block::make('rich_text')->label(PageSections::label('rich_text'))->icon(Heroicon::OutlinedBars3BottomLeft)->schema([
-                TextInput::make('title'),
-                MarkdownEditor::make('body')->required(),
-                $hidden,
-            ]),
-            Block::make('form')->label(PageSections::label('form'))->icon(Heroicon::OutlinedEnvelope)->schema([
-                ...$heading(),
-                Select::make('kind')->options(PageSections::FORMS)->required(),
-                TextInput::make('success')->label('Thank-you message')->default('Thanks — we’ll reply within one business day.'),
-                $hidden,
-            ]),
-            Block::make('cta')->label(PageSections::label('cta'))->icon(Heroicon::OutlinedCursorArrowRays)->schema([
-                TextInput::make('title')->required(),
-                Textarea::make('body')->rows(2),
-                Grid::make(2)->schema([TextInput::make('button_label')->default('Install on Shopify'), TextInput::make('button_url')->default('https://apps.shopify.com/composa')]),
-                $hidden,
-            ]),
+            $block('routing', Heroicon::OutlinedArrowLongRight, [$title(), TextInput::make('meta')->placeholder('ROUTING SHEET · TARGET < 30 MIN'), TextInput::make('anchor'), Repeater::make('items')->schema([TextInput::make('title')->required(), Textarea::make('body')->rows(2)])->columns(2)->maxItems(8)]),
+            $block('bom', Heroicon::OutlinedTableCells, [$title('Bill of materials'), Textarea::make('intro')->rows(2), Repeater::make('rows')->schema([TextInput::make('no')->label('Part no.'), TextInput::make('component')->required(), Textarea::make('body')->rows(2), TextInput::make('plan')->label('From plan')])->columns(4)->collapsible()]),
+            $block('formula', Heroicon::OutlinedCalculator, [TextInput::make('eyebrow'), $title(), Textarea::make('body')->rows(3), TextInput::make('formula'), TextInput::make('badge'), Repeater::make('terms')->schema([TextInput::make('symbol')->required(), TextInput::make('text')->required()])->columns(2)->maxItems(6)]),
+            $block('patterns', Heroicon::OutlinedRectangleGroup, [$title('Start from a pattern'), Grid::make(3)->schema([TextInput::make('link_label')->default('All templates →'), TextInput::make('link_url')->default('/templates'), TextInput::make('count')->numeric()->default(6)])]),
+            $block('template_library', Heroicon::OutlinedSquares2x2, [Placeholder::make('info')->content('Lists every published template from Catalog → Templates, with category filters and a spec panel.')]),
+            $block('spec_card', Heroicon::OutlinedClipboardDocumentCheck, [TextInput::make('eyebrow'), $title(), Textarea::make('body')->rows(3), Grid::make(2)->schema([TextInput::make('card_title'), TextInput::make('badge')]), Repeater::make('rows')->schema([TextInput::make('k')->label('Label')->required(), TextInput::make('v')->label('Value')->required()])->columns(2), Grid::make(2)->schema([TextInput::make('footer_left'), TextInput::make('footer_right')])]),
+            $block('beta_inline', Heroicon::OutlinedPencilSquare, [$title('Order form: *beta access*'), Textarea::make('body')->rows(3)]),
+            $block('pricing', Heroicon::OutlinedCurrencyDollar, [$sheet(), $title('Specify your *requirements.*'), Textarea::make('intro')->rows(2), TextInput::make('footnote'), TextInput::make('table_title')->default('Full specification'), Placeholder::make('info')->content('Plans, prices and limits come from Merchants → Plans.')]),
+            $block('chapters', Heroicon::OutlinedBookOpen, [Toggle::make('index')->label('Show the chapter index')->default(true), Repeater::make('items')->schema([
+                TextInput::make('letter')->required()->maxLength(2), TextInput::make('title')->required(), TextInput::make('anchor'), TextInput::make('plan')->default('All plans'),
+                Textarea::make('body')->rows(3)->columnSpan(2), Textarea::make('spec')->label('Spec lines (one per line)')->rows(4)->columnSpan(2), TextInput::make('doc_url')->label('Docs link')->columnSpan(2),
+            ])->columns(4)->collapsible()->itemLabel(fn (array $state) => trim(($state['letter'] ?? '').' · '.($state['title'] ?? '')))]),
+            $block('input_types', Heroicon::OutlinedCursorArrowRays, [$title('Input types, all eleven'), TextInput::make('label'), Repeater::make('items')->schema([TextInput::make('glyph')->maxLength(4), TextInput::make('name')->required(), TextInput::make('desc')])->columns(3), Grid::make(2)->schema([TextInput::make('extra_title'), TextInput::make('extra_body')])]),
+            $block('tolerances', Heroicon::OutlinedShieldCheck, [$title('Tolerances'), TextInput::make('label'), Repeater::make('items')->schema([TextInput::make('code')->maxLength(4), TextInput::make('title')->required(), Textarea::make('body')->rows(2)])->columns(3)]),
+            $block('drawn_for', Heroicon::OutlinedUserGroup, [$title('Drawn for'), Repeater::make('items')->schema([TextInput::make('code'), TextInput::make('title')->required(), TextInput::make('desc')])->columns(3)->maxItems(6)]),
+            $block('team', Heroicon::OutlinedUsers, [$title('The drafting room'), Grid::make(2)->schema([TextInput::make('link_label'), TextInput::make('link_url')]), Repeater::make('members')->schema([TextInput::make('name')->required(), TextInput::make('role'), TextInput::make('photo')->label('Photo URL')->url()])->columns(3)]),
+            $block('contact', Heroicon::OutlinedEnvelope, [$sheet(), $title('Send us a *request.*'), Textarea::make('intro')->rows(3), TextInput::make('success'), Repeater::make('channels')->schema([TextInput::make('k')->label('Label')->required(), TextInput::make('v')->label('Value')->required()])->columns(2)]),
+            $block('beta', Heroicon::OutlinedBeaker, [$sheet(), $title('Help us draw *version one.*'), Textarea::make('intro')->rows(3), TextInput::make('success'), Repeater::make('timeline')->schema([TextInput::make('title')->required(), TextInput::make('desc')])->columns(2)->maxItems(6)]),
+            $block('gets', Heroicon::OutlinedGift, [$title('What beta stores get'), Repeater::make('items')->schema([TextInput::make('code'), TextInput::make('title')->required(), Textarea::make('body')->rows(2)])->columns(3)->maxItems(6)]),
+            $block('notes', Heroicon::OutlinedQuestionMarkCircle, [$title('Notes'), Grid::make(2)->schema([Select::make('placement')->options(PageSections::FAQ_PLACEMENTS)->default('home')->required(), TextInput::make('prefix')->default('N')->maxLength(2)]), Placeholder::make('info')->content('Questions come from Website → FAQs with this placement.')]),
+            $block('changelog', Heroicon::OutlinedClock, [TextInput::make('count')->numeric()->default(30), Placeholder::make('info')->content('Entries come from Website → Changelog.')]),
+            $block('status', Heroicon::OutlinedSignal, [$sheet(), Placeholder::make('info')->content('Components and incidents come from Status page.')]),
+            $block('rich_text', Heroicon::OutlinedBars3BottomLeft, [TextInput::make('title'), MarkdownEditor::make('body')->required()]),
+            $block('newsletter_band', Heroicon::OutlinedAtSymbol, [$title('New notes, once a month.'), TextInput::make('source')->default('page')]),
+            $block('cta_band', Heroicon::OutlinedMegaphone, [$title(), Grid::make(3)->schema([Select::make('style')->options(['orange' => 'Orange', 'dark' => 'Dark'])->default('orange'), Select::make('size')->options(['l' => 'Large', 'xl' => 'Extra large'])->default('l')]), Grid::make(2)->schema([TextInput::make('button_label'), TextInput::make('button_url'), TextInput::make('secondary_label'), TextInput::make('secondary_url')])]),
         ];
     }
 

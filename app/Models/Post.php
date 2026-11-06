@@ -19,4 +19,10 @@ class Post extends Model
     {
         return $query->where('status', 'published')->whereNotNull('published_at')->where('published_at', '<=', now());
     }
+
+    /** Sheet number shown as "J-07": the post's position in publishing order. */
+    public function getJournalNoAttribute(): int
+    {
+        return $this->published_at ? static::query()->live()->where('published_at', '<=', $this->published_at)->count() : 0;
+    }
 }
