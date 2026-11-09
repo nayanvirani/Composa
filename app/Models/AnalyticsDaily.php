@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** Daily rollup per configurator. */
 class AnalyticsDaily extends Model
 {
+    protected $table = 'analytics_daily';
+
+    public $timestamps = false;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

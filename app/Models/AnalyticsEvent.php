@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** A raw storefront event (open, step, add_to_cart, load_ms), rolled up nightly into analytics_daily. */
 class AnalyticsEvent extends Model
 {
+    public $timestamps = false;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

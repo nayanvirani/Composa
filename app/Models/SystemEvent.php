@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** A deduplicated monitoring signal (price mismatches, webhook failures, slow loads…). */
 class SystemEvent extends Model
 {
+    public $timestamps = false;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
