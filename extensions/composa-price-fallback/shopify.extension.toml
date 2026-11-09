@@ -1,4 +1,5 @@
 api_version = "2026-07"
+uid = "5c2fef75-5b80-088e-0f3d-425e68bc9fa4341a4af2"
 
 [[extensions]]
 name = "Composa price fallback"

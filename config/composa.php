@@ -9,8 +9,8 @@ return [
         'api_key' => env('SHOPIFY_API_KEY'),
         'api_secret' => env('SHOPIFY_API_SECRET'),
         'api_version' => env('SHOPIFY_API_VERSION', '2026-07'),
-        'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets,write_discounts'),
-        'app_handle' => env('SHOPIFY_APP_HANDLE', 'composa'),
+        'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets,write_discounts,write_app_proxy'),
+        'app_handle' => env('SHOPIFY_APP_HANDLE', 'composa-configurator'),
         // App Proxy: Shopify forwards https://{shop}/{prefix}/{subpath}/* to APP_URL/proxy/*
         'proxy_prefix' => env('SHOPIFY_PROXY_PREFIX', 'apps'),
         'proxy_subpath' => env('SHOPIFY_PROXY_SUBPATH', 'composa'),

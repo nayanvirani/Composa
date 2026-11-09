@@ -110,8 +110,11 @@
 
   // Collection cards: add a "Customize" link to products that have a configurator.
   function decorateCards() {
-    var map = readJSON('[data-composa-cards]');
-    if (!map) return;
+    // [[handle, label], …] from the app embed
+    var pairs = readJSON('[data-composa-cards]');
+    if (!pairs || !pairs.length) return;
+    var map = {};
+    for (var p = 0; p < pairs.length; p++) map[pairs[p][0]] = pairs[p][1];
     var links = d.querySelectorAll('a[href*="/products/"]');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];

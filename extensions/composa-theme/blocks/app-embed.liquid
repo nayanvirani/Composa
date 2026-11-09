@@ -32,12 +32,12 @@
         {%- capture composa_key -%}{%- render 'composa-resolve', resolve_product: p -%}{%- endcapture -%}{%- assign composa_key = composa_key | strip -%}
         {%- if composa_key != '' -%}
           {%- assign c = shop.metafields.composa[composa_key].value -%}
-          {%- if c.display.button.collection_cards != false -%}"{{ p.handle }}":{{ c.display.button.label | default: 'Customize' | json }},{%- endif -%}
+          {%- if c.display.button.collection_cards != false -%}[{{ p.handle | json }},{{ c.display.button.label | default: 'Customize' | json }}],{%- endif -%}
         {%- endif -%}
       {%- endfor -%}
     {%- endcapture -%}
     {%- if composa_cards != '' -%}
-      <script type="application/json" data-composa-cards>{{ '{' }}{{ composa_cards | remove_last: ',' }}{{ '}' }}</script>
+      <script type="application/json" data-composa-cards>[{{ composa_cards | remove_last: ',' }}]</script>
     {%- endif -%}
   {%- endif -%}
 

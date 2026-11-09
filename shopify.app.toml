@@ -6,16 +6,15 @@
 
 client_id = "52ff65100c1162390e066df49de70b78"
 name = "Composa"
-handle = "composa"
+handle = "composa-configurator"
 application_url = "https://composa.orderorbit.space/app"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = false
-include_config_on_deploy = true
 
 [access_scopes]
-scopes = "read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets,write_discounts"
+scopes = "read_products,write_products,read_themes,write_cart_transforms,read_orders,write_orders,write_files,read_locales,read_markets,write_discounts,write_app_proxy"
 use_legacy_install_flow = false
 
 [auth]
@@ -29,13 +28,19 @@ api_version = "2026-07"
     "app/uninstalled",
     "app/scopes_update",
     "app_subscriptions/update",
-    "orders/create",
     "products/update",
     "products/delete",
     "shop/update",
     "themes/publish"
   ]
   uri = "https://composa.orderorbit.space/webhooks/shopify"
+
+  # orders/create links configured orders to their specs. It carries protected customer data, so
+  # Shopify only allows it after "Protected customer data access" is approved in the Dev Dashboard.
+  # Uncomment once approved:
+  # [[webhooks.subscriptions]]
+  # topics = ["orders/create"]
+  # uri = "https://composa.orderorbit.space/webhooks/shopify"
 
   [[webhooks.subscriptions]]
   compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
