@@ -71,9 +71,11 @@ final class DefinitionValidator
                 if (! in_array($type, self::FIELD_TYPES, true)) {
                     $err("$path.type", 'Unknown input type.');
                 }
-                if (in_array($type, self::CHOICE_TYPES, true)) {
+                if (in_array($type, self::CHOICE_TYPES, true) || $type === 'product_picker') {
                     if (empty($field['options'])) {
-                        $err("$path.options", "“".($field['label'] ?? $fkey)."” needs at least one option.");
+                        $err("$path.options", $type === 'product_picker'
+                            ? '“'.($field['label'] ?? $fkey).'” needs at least one product. Use “Add products”.'
+                            : '“'.($field['label'] ?? $fkey).'” needs at least one option.');
                     }
                     $values = [];
                     foreach ($field['options'] ?? [] as $oi => $o) {

@@ -10,6 +10,12 @@ import { evaluate as evalFormula, roundHalfUp, FormulaError } from './formula.js
 const MAX_PASSES = 5;
 const CHOICE_TYPES = ['image_tiles', 'swatch', 'buttons', 'dropdown', 'radio'];
 const MULTI_TYPES = ['checkbox'];
+
+/** How a field behaves: a product picker is a single choice, or a multi-select when it allows several. */
+export function kindOf(field) {
+  if (field.type === 'product_picker') return field.multiple ? 'checkbox' : 'radio';
+  return field.type;
+}
 const own = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
 export const cents = (major) => roundHalfUp(Number(major || 0) * 100);
@@ -137,9 +143,9 @@ function clean(definition, raw, state, availability) {
       if (field.variant_option && own(state.variantSets, field.variant_option)) value = state.variantSets[field.variant_option];
       if (field.mode === 'fixed') value = field.fixed_value;
       const disabledByStock = (v) => availability[field.key] && availability[field.key][String(v)] === false;
-      if (CHOICE_TYPES.includes(field.type)) {
+      if (CHOICE_TYPES.includes(kindOf(field))) {
         if (!isEmpty(value) && (!optionUsable(fs, value) || disabledByStock(value))) value = undefined;
-      } else if (MULTI_TYPES.includes(field.type)) {
+      } else if (MULTI_TYPES.includes(kindOf(field))) {
         value = Array.isArray(value) ? value.filter((v) => optionUsable(fs, v)) : isEmpty(value) ? undefined : [value].filter((v) => optionUsable(fs, v));
         if (value && !value.length) value = undefined;
       }
@@ -150,8 +156,8 @@ function clean(definition, raw, state, availability) {
           if (flagged) def = flagged.value;
         }
         if (!isEmpty(def)) {
-          if (CHOICE_TYPES.includes(field.type) && (!optionUsable(fs, def) || disabledByStock(def))) def = undefined;
-          if (MULTI_TYPES.includes(field.type)) def = (Array.isArray(def) ? def : [def]).filter((v) => optionUsable(fs, v));
+          if (CHOICE_TYPES.includes(kindOf(field)) && (!optionUsable(fs, def) || disabledByStock(def))) def = undefined;
+          if (MULTI_TYPES.includes(kindOf(field))) def = (Array.isArray(def) ? def : [def]).filter((v) => optionUsable(fs, v));
         }
         value = isEmpty(def) ? undefined : def;
       }
@@ -210,7 +216,7 @@ function validateField(field, fs, value, prefix, errors) {
     if (fs.required) errors.push({ field: key, code: 'required' });
     return;
   }
-  if (CHOICE_TYPES.includes(field.type) && !(field.options || []).some((o) => String(o.value) === String(value))) errors.push({ field: key, code: 'invalid_option' });
+  if (CHOICE_TYPES.includes(kindOf(field)) && !(field.options || []).some((o) => String(o.value) === String(value))) errors.push({ field: key, code: 'invalid_option' });
   if (field.type === 'text') {
     const len = Array.from(String(value)).length;
     if (v.max_length != null && len > v.max_length) errors.push({ field: key, code: 'max_length' });
@@ -233,7 +239,7 @@ function validateField(field, fs, value, prefix, errors) {
       if (v['max_' + side] != null && d[side] > v['max_' + side]) errors.push({ field: key, code: 'max_' + side });
     }
   }
-  if (MULTI_TYPES.includes(field.type)) {
+  if (MULTI_TYPES.includes(kindOf(field))) {
     const n = Array.isArray(value) ? value.length : 1;
     if (v.min_choices != null && n < v.min_choices) errors.push({ field: key, code: 'min_choices' });
     if (v.max_choices != null && n > v.max_choices) errors.push({ field: key, code: 'max_choices' });
@@ -250,8 +256,8 @@ function formulaVars(definition, answers, extra) {
     if (field.type === 'number') n = toNumber(value);
     else if (field.type === 'dimensions') { const d = dims(value); n = d.area; vars[field.key + '_w'] = d.w; vars[field.key + '_h'] = d.h; }
     else if (field.type === 'text') n = charCount(value, true);
-    else if (MULTI_TYPES.includes(field.type)) n = Array.isArray(value) ? value.length : 0;
-    else if (CHOICE_TYPES.includes(field.type)) n = toNumber(value);
+    else if (MULTI_TYPES.includes(kindOf(field))) n = Array.isArray(value) ? value.length : 0;
+    else if (CHOICE_TYPES.includes(kindOf(field))) n = toNumber(value);
     vars[field.key] = n;
     const selected = Array.isArray(value) ? value : isEmpty(value) ? [] : [value];
     for (const o of field.options || []) {

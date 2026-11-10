@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { BlockStack, Box, Button, ButtonGroup, Card, InlineStack, Text } from '@shopify/polaris';
-import { evaluate } from '@engine';
+import { evaluate, kindOf } from '@engine';
 import { money } from '@/lib/format';
 
 /**
@@ -16,7 +16,7 @@ export default function PreviewPanel({ definition, basePriceCents, variants, cur
     const step = steps[Math.min(stepIndex, steps.length - 1)];
 
     const pick = (field, value) => {
-        if (field.type === 'checkbox') {
+        if (kindOf(field) === 'checkbox') {
             const cur = Array.isArray(answers[field.key]) ? answers[field.key] : [];
             setAnswers({ ...answers, [field.key]: cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value] });
         } else setAnswers({ ...answers, [field.key]: value });
@@ -66,6 +66,8 @@ export default function PreviewPanel({ definition, basePriceCents, variants, cur
                                                 );
                                             })}
                                         </InlineStack>
+                                    ) : f.type === 'product_picker' ? (
+                                        <Text variant="bodySm" tone="subdued">No products added yet.</Text>
                                     ) : (
                                         <input aria-label={f.label} style={{ width: '100%', padding: 6, border: '1px solid var(--p-color-border)', borderRadius: 6 }} placeholder={f.placeholder || ''} value={typeof answers[f.key] === 'object' ? '' : answers[f.key] ?? ''} onChange={(e) => setAnswers({ ...answers, [f.key]: f.type === 'number' ? Number(e.target.value) : e.target.value })} />
                                     )}

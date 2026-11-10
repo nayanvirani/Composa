@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Badge, BlockStack, Box, Button, ButtonGroup, Card, Checkbox, Divider, FormLayout, InlineGrid, InlineStack, Modal, Select, Text, TextField } from '@shopify/polaris';
 import PriceRuleEditor from './PriceRuleEditor';
 import ImageField from './ImageField';
-import { CHOICE_TYPES, FIELD_TYPES, LAYOUTS, newField } from './fieldTypes';
+import { CHOICE_TYPES, FIELD_TYPES, LAYOUTS, newField, optionsFromPicker } from './fieldTypes';
 import { slug, uniqueKey } from '@/lib/format';
 
 const move = (list, i, d) => {
@@ -160,6 +160,15 @@ function FieldCard({ field, index, count, allKeys, limits, allowed, tables, onCh
     const setV = (patch) => onChange({ validation: { ...v, ...patch } });
     const num = (x) => (x === '' ? undefined : Number(x));
     const variant = !!field.variant_option;
+    const picker = field.type === 'product_picker';
+    const pickProducts = async () => {
+        if (!window.shopify?.resourcePicker) return;
+        const selection = await window.shopify.resourcePicker({ type: 'product', multiple: true, filter: { variants: true, draft: false, archived: false } });
+        if (!selection) return;
+        const added = optionsFromPicker(selection, field.options || []);
+        const room = limits.options ? Math.max(0, limits.options - (field.options || []).length) : added.length;
+        onChange({ options: [...(field.options || []), ...added.slice(0, room)] });
+    };
 
     return (
         <Card>
@@ -218,7 +227,13 @@ function FieldCard({ field, index, count, allKeys, limits, allowed, tables, onCh
                             <TextField label="Max size (MB)" type="number" value={String(v.max_mb ?? 20)} onChange={(x) => setV({ max_mb: num(x) })} autoComplete="off" />
                         </FormLayout.Group>
                     )}
-                    {field.type === 'checkbox' && (
+                    {picker && (
+                        <BlockStack gap="200">
+                            <Text variant="bodySm" tone="subdued">Shoppers choose from the products you add below. Each one is linked to its Shopify variant, so inventory is tracked and it reaches checkout as its own line in the bundle.</Text>
+                            <Checkbox label="Shoppers can choose several" checked={!!field.multiple} onChange={(x) => onChange({ multiple: x })} />
+                        </BlockStack>
+                    )}
+                    {(field.type === 'checkbox' || (picker && field.multiple)) && (
                         <FormLayout.Group condensed>
                             <TextField label="Min choices" type="number" value={String(v.min_choices ?? '')} onChange={(x) => setV({ min_choices: num(x) })} autoComplete="off" />
                             <TextField label="Max choices" type="number" value={String(v.max_choices ?? '')} onChange={(x) => setV({ max_choices: num(x) })} autoComplete="off" />
@@ -226,7 +241,7 @@ function FieldCard({ field, index, count, allKeys, limits, allowed, tables, onCh
                     )}
                     {!variant && !choice && <PriceRuleEditor rule={field.price_rule} onChange={(r) => onChange({ price_rule: r })} allowed={allowed} tables={tables} fieldType={field.type} />}
                     {!variant && choice && field.price_rule && <PriceRuleEditor rule={field.price_rule} onChange={(r) => onChange({ price_rule: r })} allowed={allowed} tables={tables} label="Field price rule (in addition to option prices)" />}
-                    {!variant && choice && !field.price_rule && <InlineStack><Button variant="plain" onClick={() => onChange({ price_rule: { type: 'table', table: Object.keys(tables || {})[0] || '' } })}>Price this field from a table or formula</Button></InlineStack>}
+                    {!variant && choice && !picker && !field.price_rule && <InlineStack><Button variant="plain" onClick={() => onChange({ price_rule: { type: 'table', table: Object.keys(tables || {})[0] || '' } })}>Price this field from a table or formula</Button></InlineStack>}
                 </FormLayout>
 
                 {choice && (
@@ -234,10 +249,14 @@ function FieldCard({ field, index, count, allKeys, limits, allowed, tables, onCh
                         <Divider />
                         <InlineStack align="space-between">
                             <Text fontWeight="semibold">Options · {(field.options || []).length}{limits.options ? ' / ' + limits.options : ''}</Text>
-                            {!variant && (
+                            {picker && (
+                                <Button size="slim" variant="primary" disabled={limits.options && field.options.length >= limits.options} onClick={pickProducts}>Add products</Button>
+                            )}
+                            {!variant && !picker && (
                                 <Button size="slim" disabled={limits.options && field.options.length >= limits.options} onClick={() => onChange({ options: [...field.options, { value: uniqueKey('option_' + (field.options.length + 1), field.options.map((o) => String(o.value))), label: 'New option' }] })}>Add option</Button>
                             )}
                         </InlineStack>
+                        {picker && !(field.options || []).length && <Text tone="subdued">No products yet. Use “Add products” to choose what shoppers can pick.</Text>}
                         {(field.options || []).map((o, oi) => (
                             <InlineGrid key={o.value + oi} columns="28px 1.4fr 1fr 1fr auto" gap="200" alignItems="center">
                                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: o.swatch || (o.image ? `center/cover url(${o.image})` : 'var(--p-color-bg-fill-secondary)'), border: '1px solid rgba(0,0,0,.15)' }} />

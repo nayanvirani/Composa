@@ -18,6 +18,17 @@ final class Engine
 
     private const MULTI_TYPES = ['checkbox'];
 
+    /** How a field behaves: a product picker is a single choice, or a multi-select when it allows several. */
+    private static function kindOf(array $field): string
+    {
+        $type = $field['type'] ?? '';
+        if ($type === 'product_picker') {
+            return empty($field['multiple']) ? 'radio' : 'checkbox';
+        }
+
+        return $type;
+    }
+
     public static function cents(mixed $major): int
     {
         return (int) Formula::roundHalfUp(self::num($major) * 100);
@@ -363,7 +374,7 @@ final class Engine
                 if (($field['mode'] ?? null) === 'fixed') {
                     $value = $field['fixed_value'] ?? null;
                 }
-                $type = $field['type'] ?? '';
+                $type = self::kindOf($field);
                 $byStock = fn ($v) => isset($availability[$field['key']]) && ($availability[$field['key']][self::str($v)] ?? null) === false;
                 if (in_array($type, self::CHOICE_TYPES, true)) {
                     if (! self::isEmpty($value) && (! self::optionUsable($fs, $value) || $byStock($value))) {
@@ -501,7 +512,7 @@ final class Engine
     {
         $key = $prefix.$field['key'];
         $v = $field['validation'] ?? [];
-        $type = $field['type'] ?? '';
+        $type = self::kindOf($field);
         if (self::isEmpty($value)) {
             if (! empty($fs['required'])) {
                 $errors[] = ['field' => $key, 'code' => 'required'];
@@ -573,7 +584,7 @@ final class Engine
         $vars = $definition['settings']['variables'] ?? [];
         foreach (self::fieldsOf($definition) as ['field' => $field]) {
             $value = $answers[$field['key']] ?? null;
-            $type = $field['type'] ?? '';
+            $type = self::kindOf($field);
             $n = 0.0;
             if ($type === 'number') {
                 $n = self::num($value);

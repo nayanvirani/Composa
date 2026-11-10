@@ -65,7 +65,7 @@ final class SpecSheet
             'dimensions' => (is_array($value) ? ($value['w'] ?? '?').' × '.($value['h'] ?? '?') : (string) $value).(! empty($field['unit']) ? ' '.$field['unit'] : ''),
             'file' => is_array($value) ? (string) ($value['name'] ?? 'File') : 'File',
             'text' => '“'.(string) $value.'”',
-            'product_picker' => is_array($value) ? (string) ($value['title'] ?? $value['id'] ?? '') : (string) $value,
+            'product_picker' => implode(', ', array_map($label, (array) $value)),
             default => is_scalar($value) ? $label($value) : '',
         };
     }

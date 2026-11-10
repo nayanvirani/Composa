@@ -636,6 +636,170 @@
     },
     "layers": []
   },
+  "commerce.json :: product picker: one stocked product adds its own price": {
+    "answers": {
+      "charm": "102"
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "charm": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "101": {
+            "visible": true,
+            "disabled": false
+          },
+          "102": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1000,
+      "options_cents": 2000,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 3000,
+      "total_cents": 3000,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1000
+        },
+        {
+          "label": "charm · Star charm",
+          "cents": 2000
+        }
+      ],
+      "components": [
+        {
+          "variant_id": "gid://shopify/ProductVariant/102",
+          "cents": 2000,
+          "quantity": 1
+        }
+      ]
+    },
+    "layers": []
+  },
+  "commerce.json :: product picker allowing several: each chosen product adds its price": {
+    "answers": {
+      "charm": [
+        "101",
+        "102"
+      ]
+    },
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "charm": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "101": {
+            "visible": true,
+            "disabled": false
+          },
+          "102": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [],
+    "valid": true,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1000,
+      "options_cents": 3250,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 4250,
+      "total_cents": 4250,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1000
+        },
+        {
+          "label": "charm · Heart charm",
+          "cents": 1250
+        },
+        {
+          "label": "charm · Star charm",
+          "cents": 2000
+        }
+      ],
+      "components": [
+        {
+          "variant_id": "gid://shopify/ProductVariant/101",
+          "cents": 1250,
+          "quantity": 1
+        },
+        {
+          "variant_id": "gid://shopify/ProductVariant/102",
+          "cents": 2000,
+          "quantity": 1
+        }
+      ]
+    },
+    "layers": []
+  },
+  "commerce.json :: product picker drops a product that is not on the list, so the required field is empty": {
+    "answers": {},
+    "visible_steps": [
+      "s1"
+    ],
+    "fields": {
+      "charm": {
+        "visible": true,
+        "required": true,
+        "options": {
+          "101": {
+            "visible": true,
+            "disabled": false
+          },
+          "102": {
+            "visible": true,
+            "disabled": false
+          }
+        }
+      }
+    },
+    "errors": [
+      {
+        "field": "charm",
+        "code": "required"
+      }
+    ],
+    "valid": false,
+    "variant_id": null,
+    "price": {
+      "base_cents": 1000,
+      "options_cents": 0,
+      "markup_percent": 0,
+      "formula_cents": 0,
+      "unit_cents": 1000,
+      "total_cents": 1000,
+      "lines": [
+        {
+          "label": "Base",
+          "cents": 1000
+        }
+      ],
+      "components": []
+    },
+    "layers": []
+  },
   "jewelry.json :: ring: fixed options, carat x clarity table, per-character engraving": {
     "answers": {
       "shape": "oval",

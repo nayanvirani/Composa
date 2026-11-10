@@ -133,5 +133,29 @@
     "answers": { "size": "XL" },
     "context": { "base_price_cents": 1234, "quantity": 5 },
     "expect": { "valid": true, "markup_percent": -10, "options_cents": 400, "unit_cents": 1500, "total_cents": 7500 }
+  },
+  {
+    "id": "picker-single",
+    "name": "product picker: one stocked product adds its own price",
+    "definition": {"steps": [{"key": "s1", "title": "Charms", "fields": [{"key": "charm", "type": "product_picker", "required": true, "options": [{"value": "101", "label": "Heart charm", "linked_variant_id": "gid://shopify/ProductVariant/101", "price_rule": {"type": "fixed", "amount": 12.5}}, {"value": "102", "label": "Star charm", "linked_variant_id": "gid://shopify/ProductVariant/102", "price_rule": {"type": "fixed", "amount": 20}}]}]}]},
+    "answers": {"charm": "102"},
+    "context": {"base_price_cents": 1000},
+    "expect": {"valid": true, "unit_cents": 3000}
+  },
+  {
+    "id": "picker-multi",
+    "name": "product picker allowing several: each chosen product adds its price",
+    "definition": {"steps": [{"key": "s1", "title": "Charms", "fields": [{"key": "charm", "type": "product_picker", "required": true, "options": [{"value": "101", "label": "Heart charm", "linked_variant_id": "gid://shopify/ProductVariant/101", "price_rule": {"type": "fixed", "amount": 12.5}}, {"value": "102", "label": "Star charm", "linked_variant_id": "gid://shopify/ProductVariant/102", "price_rule": {"type": "fixed", "amount": 20}}], "multiple": true}]}]},
+    "answers": {"charm": ["101", "102"]},
+    "context": {"base_price_cents": 1000},
+    "expect": {"valid": true, "unit_cents": 4250}
+  },
+  {
+    "id": "picker-unknown",
+    "name": "product picker drops a product that is not on the list, so the required field is empty",
+    "definition": {"steps": [{"key": "s1", "title": "Charms", "fields": [{"key": "charm", "type": "product_picker", "required": true, "options": [{"value": "101", "label": "Heart charm", "linked_variant_id": "gid://shopify/ProductVariant/101", "price_rule": {"type": "fixed", "amount": 12.5}}, {"value": "102", "label": "Star charm", "linked_variant_id": "gid://shopify/ProductVariant/102", "price_rule": {"type": "fixed", "amount": 20}}]}]}]},
+    "answers": {"charm": "999"},
+    "context": {"base_price_cents": 1000},
+    "expect": {"valid": false, "errors": ["required"]}
   }
 ]

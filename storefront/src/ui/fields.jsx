@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { kindOf } from '@engine';
 import { proxy } from './lib.js';
 
 const CHOICE = ['image_tiles', 'swatch', 'buttons', 'dropdown', 'radio'];
@@ -41,12 +42,12 @@ export function Field({ field, state, value, onChange, t, money, priceOf, error,
   } else if (field.type === 'file') {
     control = <FileField field={field} value={value} onChange={onChange} t={t} settings={settings} label={label} />;
   } else if (field.type === 'product_picker') {
-    control = <Choice field={{ ...field, type: 'radio' }} state={state} value={value} onChange={onChange} t={t} money={money} priceOf={priceOf} label={label} />;
+    control = <Choice field={{ ...field, layout: field.layout || 'tiles' }} state={state} value={value} onChange={onChange} t={t} money={money} priceOf={priceOf} label={label} />;
   }
 
   return (
     <div class={'cmp-field' + (error ? ' has-error' : '')}>
-      {CHOICE.includes(field.type) || field.type === 'checkbox' ? (
+      {CHOICE.includes(field.type) || field.type === 'checkbox' || field.type === 'product_picker' ? (
         <div class="cmp-label" id={id + '-label'}>{label}{required ? <span aria-hidden="true"> *</span> : null}</div>
       ) : (
         <label class="cmp-label" for={id}>{label}{required ? <span aria-hidden="true"> *</span> : null}</label>
@@ -59,7 +60,7 @@ export function Field({ field, state, value, onChange, t, money, priceOf, error,
 }
 
 function Choice({ field, state, value, onChange, t, money, priceOf, label }) {
-  const multi = field.type === 'checkbox';
+  const multi = kindOf(field) === 'checkbox';
   const layout = layoutOf(field);
   const opts = (field.options || []).filter((o) => state?.options?.[String(o.value)]?.visible !== false);
   const selected = (o) => (multi ? Array.isArray(value) && value.map(String).includes(String(o.value)) : String(value) === String(o.value));
